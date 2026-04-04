@@ -1,0 +1,3601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Chhatro Bondhu Exam Portal</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Roboto+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --blue: #1B4F8A;
+      --blue2: #1a6fbd;
+      --blue-lt: #e8f1fa;
+      --green: #1a7a3c;
+      --green-lt: #e8f5ed;
+      --red: #c0392b;
+      --red-lt: #fdf0ef;
+      --purple: #6c3483;
+      --purple-lt: #f5eef8;
+      --amber: #b45309;
+      --amber-lt: #fef3c7;
+      --gray: #6b7280;
+      --gray-lt: #f3f4f6;
+      --gray-bd: #d1d5db;
+      --text: #1f2937;
+      --text2: #4b5563;
+      --text3: #9ca3af;
+      --page: #f0f2f5;
+      --radius: 4px;
+      --radius2: 6px;
+      --sh: 0 1px 3px rgba(0, 0, 0, .12);
+      --sh2: 0 2px 8px rgba(0, 0, 0, .15);
+      /* palette states — NTA colours */
+      --s0: #808080;
+      /* not visited   */
+      --s1: #c0392b;
+      /* not answered  */
+      --s2: #1a7a3c;
+      /* answered      */
+      --s3: #6c3483;
+      /* marked (no ans) */
+      --s4: #8B4513;
+      /* answered + marked — distinct brown-orange */
+    }
+
+    html,
+    body {
+      height: 100%;
+      background: var(--page);
+      color: var(--text);
+      font-family: 'Open Sans', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow: hidden
+    }
+
+    #root {
+      height: 100%;
+      display: flex;
+      flex-direction: column
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      border: none;
+      outline: none;
+      transition: all .15s
+    }
+
+    input,
+    select,
+    textarea {
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .15s
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #bbb;
+      border-radius: 3px
+    }
+
+    /* KaTeX */
+    .katex {
+      font-size: 1em !important
+    }
+
+    .katex-display {
+      margin: .6em 0 !important;
+      overflow-x: auto
+    }
+
+    .katex-display>.katex {
+      text-align: left !important
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 16px;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 13px;
+      white-space: nowrap;
+      border: none
+    }
+
+    .btn-blue {
+      background: var(--blue);
+      color: #fff
+    }
+
+    .btn-blue:hover {
+      background: var(--blue2)
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #fff
+    }
+
+    .btn-green:hover {
+      background: #155f2e
+    }
+
+    .btn-red {
+      background: var(--red);
+      color: #fff
+    }
+
+    .btn-red:hover {
+      background: #a93226
+    }
+
+    .btn-purple {
+      background: var(--purple);
+      color: #fff
+    }
+
+    .btn-purple:hover {
+      background: #5b2c6f
+    }
+
+    .btn-gray {
+      background: #e5e7eb;
+      color: var(--text)
+    }
+
+    .btn-gray:hover {
+      background: #d1d5db
+    }
+
+    .btn-outline {
+      background: #fff;
+      color: var(--blue);
+      border: 1px solid var(--blue)
+    }
+
+    .btn-outline:hover {
+      background: var(--blue-lt)
+    }
+
+    .btn-sm {
+      padding: 5px 11px;
+      font-size: 12px
+    }
+
+    .btn-lg {
+      padding: 10px 24px;
+      font-size: 14px
+    }
+
+    .btn:disabled {
+      opacity: .45;
+      pointer-events: none
+    }
+
+    .w-full {
+      width: 100%;
+      justify-content: center
+    }
+
+    /* ── FORMS ── */
+    .fl {
+      margin-bottom: 13px
+    }
+
+    .flbl {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: .35px
+    }
+
+    .fc {
+      width: 100%;
+      border: 1px solid var(--gray-bd);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      color: var(--text);
+      background: #fff
+    }
+
+    .fc:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px rgba(27, 79, 138, .12)
+    }
+
+    .fc::placeholder {
+      color: var(--text3)
+    }
+
+    textarea.fc {
+      resize: vertical;
+      line-height: 1.6
+    }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600
+    }
+
+    .bg-blue {
+      background: var(--blue-lt);
+      color: var(--blue)
+    }
+
+    .bg-green {
+      background: var(--green-lt);
+      color: var(--green)
+    }
+
+    .bg-red {
+      background: var(--red-lt);
+      color: var(--red)
+    }
+
+    .bg-purple {
+      background: var(--purple-lt);
+      color: var(--purple)
+    }
+
+    .bg-gray {
+      background: var(--gray-lt);
+      color: var(--gray)
+    }
+
+    .bg-amber {
+      background: var(--amber-lt);
+      color: var(--amber)
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: #fff;
+      border: 1px solid var(--gray-bd);
+      border-radius: var(--radius2);
+      padding: 18px;
+      box-shadow: var(--sh)
+    }
+
+    .chd {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--gray-bd)
+    }
+
+    /* ── NOTIF ── */
+    .nc {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      pointer-events: none
+    }
+
+    .ni {
+      background: #fff;
+      border: 1px solid var(--gray-bd);
+      border-radius: var(--radius2);
+      padding: 10px 14px;
+      font-size: 13px;
+      box-shadow: var(--sh2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: auto;
+      max-width: 360px;
+      animation: nIn .18s ease
+    }
+
+    .ni-s {
+      border-left: 3px solid var(--green)
+    }
+
+    .ni-e {
+      border-left: 3px solid var(--red)
+    }
+
+    .ni-i {
+      border-left: 3px solid var(--blue)
+    }
+
+    .ni-w {
+      border-left: 3px solid var(--amber)
+    }
+
+    @keyframes nIn {
+      from {
+        transform: translateX(16px);
+        opacity: 0
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1
+      }
+    }
+
+    /* ── MODAL ── */
+    .ov {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .52);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 20px
+    }
+
+    .mo {
+      background: #fff;
+      border-radius: var(--radius2);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .28);
+      width: 100%;
+      max-width: 560px;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column
+    }
+
+    .mo-lg {
+      max-width: 860px
+    }
+
+    .mo-xl {
+      max-width: 1060px
+    }
+
+    .moh {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--gray-bd);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0
+    }
+
+    .moh h3 {
+      font-size: 15px;
+      font-weight: 700
+    }
+
+    .mox {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      background: #f3f4f6;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text2)
+    }
+
+    .mox:hover {
+      background: #e5e7eb
+    }
+
+    .mob {
+      padding: 18px;
+      overflow-y: auto;
+      flex: 1
+    }
+
+    .mof {
+      padding: 12px 18px;
+      border-top: 1px solid var(--gray-bd);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-shrink: 0
+    }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid var(--gray-bd);
+      margin-bottom: 16px
+    }
+
+    .tab {
+      padding: 7px 15px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all .15s
+    }
+
+    .tab.on {
+      color: var(--blue);
+      border-bottom-color: var(--blue)
+    }
+
+    .tab:hover:not(.on) {
+      color: var(--text)
+    }
+
+    /* ── TABLE ── */
+    .tw {
+      overflow-x: auto;
+      border-radius: var(--radius2);
+      border: 1px solid var(--gray-bd);
+      background: #fff
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    th {
+      text-align: left;
+      padding: 9px 13px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--gray-bd)
+    }
+
+    td {
+      padding: 10px 13px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+      vertical-align: middle
+    }
+
+    tr:last-child td {
+      border-bottom: none
+    }
+
+    tr:hover td {
+      background: #fafafa
+    }
+
+    /* ────────────────────────── AUTH */
+    .auth-page {
+      height: 100%;
+      overflow: auto;
+      background: linear-gradient(145deg, #0d3d6e 0%, #1B4F8A 45%, #1a6fbd 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px
+    }
+
+    .auth-box {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, .3);
+      width: 100%;
+      max-width: 400px
+    }
+
+    .auth-hd {
+      background: var(--blue);
+      padding: 22px;
+      text-align: center;
+      color: #fff;
+      border-radius: 8px 8px 0 0
+    }
+
+    .auth-logo {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.3
+    }
+
+    .auth-logo-sub {
+      font-size: 11px;
+      opacity: .75;
+      margin-top: 3px;
+      letter-spacing: .3px
+    }
+
+    .auth-bd {
+      padding: 26px
+    }
+
+    .auth-tabs {
+      display: flex;
+      border-bottom: 2px solid #e5e7eb;
+      margin-bottom: 18px
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text3);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all .15s
+    }
+
+    .auth-tab.on {
+      color: var(--blue);
+      border-bottom-color: var(--blue)
+    }
+
+    .auth-err {
+      background: var(--red-lt);
+      border: 1px solid #fca5a5;
+      border-radius: var(--radius);
+      padding: 9px 12px;
+      font-size: 12px;
+      color: var(--red);
+      margin-bottom: 12px
+    }
+
+    /* ────────────────────────── MAIN LAYOUT */
+    .layout {
+      display: grid;
+      grid-template-columns: 210px 1fr;
+      grid-template-rows: 52px 1fr;
+      height: 100%;
+      overflow: hidden
+    }
+
+    .topbar {
+      grid-column: 1/-1;
+      background: var(--blue);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+      z-index: 20;
+      flex-shrink: 0
+    }
+
+    .tbar-logo {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+      letter-spacing: -.2px
+    }
+
+    .tbar-logo small {
+      display: block;
+      font-size: 10px;
+      font-weight: 400;
+      opacity: .7;
+      letter-spacing: .3px
+    }
+
+    .tbar-sep {
+      width: 1px;
+      height: 22px;
+      background: rgba(255, 255, 255, .2);
+      margin: 0 4px
+    }
+
+    .tbar-r {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .tbar-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+      font-size: 12px
+    }
+
+    .tbar-av {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+      border: 2px solid rgba(255, 255, 255, .3);
+      flex-shrink: 0
+    }
+
+    .tbar-btn {
+      background: rgba(255, 255, 255, .14);
+      border: 1px solid rgba(255, 255, 255, .25);
+      color: #fff;
+      padding: 5px 11px;
+      border-radius: var(--radius);
+      font-size: 12px
+    }
+
+    .tbar-btn:hover {
+      background: rgba(255, 255, 255, .24)
+    }
+
+    .sidebar {
+      background: #fff;
+      border-right: 1px solid var(--gray-bd);
+      overflow-y: auto;
+      padding: 10px 0
+    }
+
+    .sb-sec {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      padding: 9px 13px 4px
+    }
+
+    .sb-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 13px;
+      cursor: pointer;
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 500;
+      border-left: 3px solid transparent;
+      transition: all .12s
+    }
+
+    .sb-item:hover {
+      background: var(--blue-lt);
+      color: var(--blue)
+    }
+
+    .sb-item.on {
+      background: var(--blue-lt);
+      color: var(--blue);
+      border-left-color: var(--blue)
+    }
+
+    .sb-div {
+      height: 1px;
+      background: var(--gray-bd);
+      margin: 7px 0
+    }
+
+    .main {
+      overflow: auto;
+      background: var(--page)
+    }
+
+    .mi {
+      padding: 18px;
+      max-width: 1200px;
+      margin: 0 auto
+    }
+
+    .phd {
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px
+    }
+
+    .ptitle {
+      font-size: 19px;
+      font-weight: 700
+    }
+
+    .psub {
+      font-size: 12px;
+      color: var(--text2);
+      margin-top: 2px
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px
+    }
+
+    .sc {
+      background: #fff;
+      border: 1px solid var(--gray-bd);
+      border-radius: var(--radius2);
+      padding: 14px;
+      box-shadow: var(--sh)
+    }
+
+    .sv {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--blue);
+      line-height: 1
+    }
+
+    .sl {
+      font-size: 10px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-top: 3px
+    }
+
+    .si {
+      font-size: 20px;
+      margin-bottom: 6px
+    }
+
+    .egrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 13px
+    }
+
+    .ec {
+      background: #fff;
+      border: 1px solid var(--gray-bd);
+      border-radius: var(--radius2);
+      padding: 16px;
+      box-shadow: var(--sh);
+      transition: box-shadow .15s, transform .15s
+    }
+
+    .ec:hover {
+      box-shadow: var(--sh2);
+      transform: translateY(-1px)
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--gray-bd);
+      margin: 12px 0
+    }
+
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text2)
+    }
+
+    /* ────────────────────────── EXAM INTERFACE */
+    .exam-shell {
+      height: 100%;
+      display: grid;
+      grid-template-rows: 52px 1fr 50px;
+      grid-template-columns: 1fr 218px;
+      overflow: hidden;
+      background: #f5f5f5
+    }
+
+    .exam-tb {
+      grid-column: 1/-1;
+      background: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    .exam-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff
+    }
+
+    .exam-sub {
+      font-size: 10px;
+      color: rgba(255, 255, 255, .65);
+      margin-top: 1px
+    }
+
+    .sec-bar {
+      display: flex;
+      overflow-x: auto;
+      padding: 0 2px
+    }
+
+    .sec-tab {
+      padding: 5px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, .65);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: all .12s
+    }
+
+    .sec-tab.on {
+      color: #fff;
+      border-bottom-color: #fbbf24;
+      background: rgba(255, 255, 255, .1)
+    }
+
+    .sec-tab:hover:not(.on) {
+      color: #fff;
+      background: rgba(255, 255, 255, .07)
+    }
+
+    .exam-timer {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 19px;
+      font-weight: 700;
+      padding: 5px 13px;
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .14);
+      border: 1px solid rgba(255, 255, 255, .22);
+      letter-spacing: 1px;
+      flex-shrink: 0;
+      color: #fff
+    }
+
+    .t-warn {
+      background: rgba(251, 191, 36, .22);
+      border-color: #fbbf24;
+      color: #fbbf24
+    }
+
+    .t-danger {
+      background: rgba(220, 38, 38, .25);
+      border-color: #ef4444;
+      color: #fef2f2;
+      animation: blink 1s infinite
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .45
+      }
+    }
+
+    .exam-main {
+      overflow-y: auto;
+      padding: 13px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px
+    }
+
+    .exam-side {
+      background: #fff;
+      border-left: 1px solid #ddd;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column
+    }
+
+    .exam-foot {
+      grid-column: 1/-1;
+      background: #fff;
+      border-top: 2px solid var(--gray-bd);
+      padding: 7px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 7px;
+      flex-wrap: wrap
+    }
+
+    .ef-l,
+    .ef-r {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    /* Question card */
+    .qcard {
+      background: #fff;
+      border: 1px solid var(--gray-bd);
+      border-radius: var(--radius);
+      padding: 16px
+    }
+
+    .qbody {
+      font-size: 14px;
+      line-height: 1.9;
+      color: var(--text);
+      margin-bottom: 14px
+    }
+
+    .qinstr {
+      font-size: 12px;
+      color: var(--text3);
+      font-style: italic;
+      margin-bottom: 10px
+    }
+
+    .qmeta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 9px;
+      flex-wrap: wrap;
+      gap: 5px
+    }
+
+    .qtype-mcq {
+      background: #dbeafe;
+      color: #1d4ed8
+    }
+
+    .qtype-msq {
+      background: #ede9fe;
+      color: #6d28d9
+    }
+
+    .qtype-num {
+      background: #fef3c7;
+      color: #b45309
+    }
+
+    .qtype {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: .3px
+    }
+
+    .qmarks {
+      font-size: 11px;
+      color: var(--text3);
+      background: #f9fafb;
+      border: 1px solid var(--gray-bd);
+      border-radius: var(--radius);
+      padding: 2px 8px
+    }
+
+    /* Options */
+    .opts {
+      display: flex;
+      flex-direction: column;
+      gap: 7px
+    }
+
+    .opt {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      padding: 9px 13px;
+      border: 2px solid var(--gray-bd);
+      border-radius: var(--radius);
+      cursor: pointer;
+      background: #fff;
+      transition: all .12s
+    }
+
+    .opt:hover {
+      border-color: #93c5fd;
+      background: #f0f9ff
+    }
+
+    .opt.sel {
+      border-color: var(--blue);
+      background: var(--blue-lt)
+    }
+
+    .opt.sel-m {
+      border-color: #7c3aed;
+      background: #f5f3ff
+    }
+
+    .opt-rd {
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      border: 2px solid #d1d5db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: all .12s
+    }
+
+    .opt.sel .opt-rd {
+      background: var(--blue);
+      border-color: var(--blue)
+    }
+
+    .opt-cb {
+      width: 19px;
+      height: 19px;
+      border-radius: 3px;
+      border: 2px solid #d1d5db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: all .12s
+    }
+
+    .opt.sel-m .opt-cb {
+      background: #7c3aed;
+      border-color: #7c3aed
+    }
+
+    .opt-k {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text3);
+      min-width: 17px
+    }
+
+    .opt.sel .opt-k {
+      color: var(--blue)
+    }
+
+    .opt.sel-m .opt-k {
+      color: #7c3aed
+    }
+
+    .opt-lbl {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.65;
+      flex: 1
+    }
+
+    /* Numerical */
+    .num-w {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      align-items: flex-start
+    }
+
+    .num-f {
+      border: 2px solid var(--gray-bd);
+      border-radius: var(--radius);
+      padding: 9px 13px;
+      font-size: 18px;
+      font-family: 'Roboto Mono', monospace;
+      width: 210px;
+      text-align: center;
+      color: var(--text);
+      background: #fff
+    }
+
+    .num-f:focus {
+      border-color: var(--blue)
+    }
+
+    .num-kp {
+      display: grid;
+      grid-template-columns: repeat(5, 38px);
+      gap: 4px
+    }
+
+    .nk {
+      height: 36px;
+      border: 1px solid var(--gray-bd);
+      border-radius: var(--radius);
+      background: #fff;
+      font-size: 13px;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--text)
+    }
+
+    .nk:hover {
+      background: var(--gray-lt)
+    }
+
+    .nk-bs {
+      color: var(--red)
+    }
+
+    .nk-pm {
+      color: var(--blue)
+    }
+
+    /* ── PALETTE ── */
+    .pal-hd {
+      padding: 9px 11px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text2);
+      border-bottom: 1px solid var(--gray-bd);
+      background: #f8fafc;
+      flex-shrink: 0
+    }
+
+    .pal-legend {
+      padding: 9px 11px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      border-bottom: 1px solid var(--gray-bd);
+      flex-shrink: 0
+    }
+
+    .pl-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      color: var(--text2);
+      line-height: 1.3
+    }
+
+    .pl-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      flex-shrink: 0
+    }
+
+    .pal-sec {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      padding: 5px 11px;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0
+    }
+
+    .pal-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      padding: 9px 11px
+    }
+
+    .pb {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      transition: transform .1s;
+      position: relative
+    }
+
+    .pb:hover {
+      transform: scale(1.1)
+    }
+
+    .pb.cur {
+      outline: 2px solid #f97316;
+      outline-offset: 1px
+    }
+
+    /* STATE COLOURS */
+    .p0 {
+      background: var(--s0)
+    }
+
+    .p1 {
+      background: var(--s1)
+    }
+
+    .p2 {
+      background: var(--s2)
+    }
+
+    .p3 {
+      background: var(--s3)
+    }
+
+    /* State 4: answered + marked — visually distinct: purple with green tick badge */
+    .p4 {
+      background: var(--s3)
+    }
+
+    .p4::after {
+      content: '✓';
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+      width: 11px;
+      height: 11px;
+      background: var(--green);
+      border-radius: 50%;
+      font-size: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #fff;
+      line-height: 11px;
+      text-align: center
+    }
+
+    .pal-sum {
+      margin-top: auto;
+      border-top: 1px solid var(--gray-bd);
+      padding: 9px 11px;
+      background: #f8fafc;
+      flex-shrink: 0
+    }
+
+    .ps-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text2);
+      padding: 2px 0
+    }
+
+    .ps-n {
+      font-weight: 700;
+      font-size: 12px
+    }
+
+    /* ── FULLSCREEN GATE ── */
+    .fs-gate {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(145deg, #0d3d6e, #1B4F8A);
+      flex-direction: column;
+      text-align: center;
+      padding: 30px;
+      gap: 20px
+    }
+
+    .fs-icon {
+      font-size: 64px
+    }
+
+    .fs-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff
+    }
+
+    .fs-sub {
+      font-size: 14px;
+      color: rgba(255, 255, 255, .72);
+      max-width: 400px;
+      line-height: 1.6
+    }
+
+    .fs-btn {
+      background: #fbbf24;
+      color: #1f2937;
+      padding: 13px 32px;
+      border-radius: var(--radius2);
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: background .15s
+    }
+
+    .fs-btn:hover {
+      background: #f59e0b
+    }
+
+    /* ── RESULT ── */
+    .res-hero {
+      background: linear-gradient(135deg, var(--blue), #1a6fbd);
+      color: #fff;
+      border-radius: var(--radius2);
+      padding: 24px;
+      margin-bottom: 16px
+    }
+
+    .s-ring {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 5px solid rgba(255, 255, 255, .3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, .1)
+    }
+
+    .s-num {
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1
+    }
+
+    .s-tot {
+      font-size: 11px;
+      opacity: .75
+    }
+
+    .rmg {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 12px
+    }
+
+    .rmi {
+      background: rgba(255, 255, 255, .12);
+      border-radius: var(--radius);
+      padding: 11px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, .15)
+    }
+
+    .rmv {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 2px
+    }
+
+    .rml {
+      font-size: 10px;
+      opacity: .7;
+      text-transform: uppercase;
+      letter-spacing: .4px
+    }
+
+    .spr {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 9px 13px;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-bd);
+      background: #fff;
+      margin-bottom: 7px
+    }
+
+    .spr-bar {
+      flex: 1;
+      height: 7px;
+      background: #e5e7eb;
+      border-radius: 9999px;
+      overflow: hidden
+    }
+
+    .spr-fill {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width .5s
+    }
+
+    .qri {
+      border: 1px solid var(--gray-bd);
+      border-radius: var(--radius2);
+      margin-bottom: 9px;
+      overflow: hidden
+    }
+
+    .qrh {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 13px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--gray-bd);
+      flex-wrap: wrap;
+      gap: 6px
+    }
+
+    .qri-c {
+      border-left: 4px solid var(--green)
+    }
+
+    .qri-w {
+      border-left: 4px solid var(--red)
+    }
+
+    .qri-s {
+      border-left: 4px solid #9ca3af
+    }
+
+    .qrb {
+      padding: 13px
+    }
+
+    .orv {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      padding: 5px 9px;
+      border-radius: var(--radius);
+      margin-bottom: 3px;
+      font-size: 13px
+    }
+
+    .orv-c {
+      background: var(--green-lt);
+      border: 1px solid #6ee7b7
+    }
+
+    .orv-w {
+      background: var(--red-lt);
+      border: 1px solid #fca5a5
+    }
+
+    .orv-p {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb
+    }
+
+    /* AI explanation */
+    .ai-box {
+      background: linear-gradient(135deg, #eef2ff, #f0f9ff);
+      border: 1px solid #c7d2fe;
+      border-radius: var(--radius2);
+      padding: 13px;
+      margin-top: 11px
+    }
+
+    .ai-hd {
+      font-size: 11px;
+      font-weight: 700;
+      color: #3730a3;
+      margin-bottom: 7px;
+      text-transform: uppercase;
+      letter-spacing: .4px
+    }
+
+    .ai-body {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.85
+    }
+
+    .ai-spin {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text2);
+      font-style: italic
+    }
+
+    .dots span {
+      animation: dt 1.3s infinite;
+      display: inline-block
+    }
+
+    .dots span:nth-child(2) {
+      animation-delay: .2s
+    }
+
+    .dots span:nth-child(3) {
+      animation-delay: .4s
+    }
+
+    @keyframes dt {
+
+      0%,
+      80%,
+      100% {
+        transform: scale(.7);
+        opacity: .4
+      }
+
+      40% {
+        transform: scale(1.1);
+        opacity: 1
+      }
+    }
+
+    /* ── ADMIN QUESTION EDITOR ── */
+    .qe-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      height: calc(100vh - 190px);
+      min-height: 480px
+    }
+
+    .qe-left {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 11px
+    }
+
+    .qe-right {
+      border: 1px solid var(--gray-bd);
+      border-radius: var(--radius2);
+      overflow-y: auto;
+      background: #f9fafb;
+      padding: 13px
+    }
+
+    .oe-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      margin-bottom: 5px
+    }
+
+    .oe-key {
+      width: 26px;
+      height: 26px;
+      border-radius: 3px;
+      background: var(--gray-lt);
+      border: 1px solid var(--gray-bd);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--text2);
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .ctog {
+      width: 21px;
+      height: 21px;
+      border-radius: 3px;
+      border: 2px solid var(--gray-bd);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 3px;
+      transition: all .15s
+    }
+
+    .ctog.ck {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff
+    }
+
+    .mh {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      margin-bottom: 5px;
+      padding: 7px;
+      background: #f9fafb;
+      border: 1px solid var(--gray-bd);
+      border-radius: var(--radius)
+    }
+
+    .ms {
+      padding: 3px 7px;
+      border: 1px solid var(--gray-bd);
+      border-radius: var(--radius);
+      background: #fff;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'Roboto Mono', monospace
+    }
+
+    .ms:hover {
+      background: var(--blue-lt);
+      border-color: var(--blue);
+      color: var(--blue)
+    }
+
+    .prev-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text3);
+      margin-bottom: 9px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--gray-bd)
+    }
+
+    /* progress */
+    .pb-outer {
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 4px
+    }
+
+    .pb-inner {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width .35s
+    }
+
+    /* Misc */
+    .flex {
+      display: flex
+    }
+
+    .ia {
+      align-items: center
+    }
+
+    .jb {
+      justify-content: space-between
+    }
+
+    .g2 {
+      gap: 8px
+    }
+
+    .g3 {
+      gap: 12px
+    }
+
+    .mt2 {
+      margin-top: 8px
+    }
+
+    .mt3 {
+      margin-top: 12px
+    }
+
+    .mt4 {
+      margin-top: 16px
+    }
+
+    .mb2 {
+      margin-bottom: 8px
+    }
+
+    .mb3 {
+      margin-bottom: 12px
+    }
+
+    .tsm {
+      font-size: 12px
+    }
+
+    .txs {
+      font-size: 11px
+    }
+
+    .tm {
+      color: var(--text2)
+    }
+
+    .td {
+      color: var(--text3)
+    }
+
+    .tg {
+      color: var(--green)
+    }
+
+    .tr {
+      color: var(--red)
+    }
+
+    .tb {
+      color: var(--blue)
+    }
+
+    .f7 {
+      font-weight: 700
+    }
+
+    .f6 {
+      font-weight: 600
+    }
+
+    .trunc {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    @media(max-width:860px) {
+      .layout {
+        grid-template-columns: 1fr
+      }
+
+      .sidebar {
+        display: none
+      }
+
+      .exam-shell {
+        grid-template-columns: 1fr
+      }
+
+      .exam-side {
+        display: none
+      }
+
+      .qe-grid {
+        grid-template-columns: 1fr
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, useRef, useMemo } = React;
+
+    /* ══════ MATH RENDERER ══════════════════════════════════════════════════ */
+    function MT({ text, block = false }) {
+      const r = useRef(null);
+      useEffect(() => {
+        if (!r.current || !text) return;
+        try {
+          renderMathInElement(r.current, {
+            delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }, { left: '\\[', right: '\\]', display: true }],
+            throwOnError: false, errorColor: '#c0392b'
+          });
+        } catch { }
+      }, [text]);
+      return <span ref={r} style={{ lineHeight: 1.85 }} dangerouslySetInnerHTML={{ __html: (text || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>') }} />;
+    }
+
+    /* ══════ STORAGE ════════════════════════════════════════════════════════ */
+    const DB = {
+      get(k, d = null) { try { const v = localStorage.getItem('cb_' + k); return v ? JSON.parse(v) : d } catch { return d } },
+      set(k, v) { try { localStorage.setItem('cb_' + k, JSON.stringify(v)) } catch { } }
+    };
+    const uid = () => Math.random().toString(36).slice(2, 10);
+
+    /* Default seed — admin only, no demo for students */
+    (() => {
+      if (!DB.get('inited')) {
+        DB.set('users', [
+          { id: 'adm1', name: 'Admin', email: 'admin@portal.com', password: 'Admin@123', role: 'admin', joinDate: '2025-01-01' }
+        ]);
+        DB.set('exams', [
+          {
+            id: 'e1', title: 'JEE Main Mock 2025', description: 'Full syllabus mock covering Physics, Chemistry & Mathematics. Strictly follows NTA JEE Main pattern.',
+            duration: 180,
+            sections: [
+              { id: 's1', name: 'Physics', color: '#2563eb', bgColor: '#dbeafe' },
+              { id: 's2', name: 'Chemistry', color: '#059669', bgColor: '#d1fae5' },
+              { id: 's3', name: 'Mathematics', color: '#dc2626', bgColor: '#fee2e2' }
+            ],
+            markingScheme: { mcq: { correct: 4, wrong: -1 }, msq: { correct: 4, wrong: 0, partial: true }, numerical: { correct: 4, wrong: 0 } },
+            status: 'active', tags: ['JEE', 'Full Length', '2025'],
+            instructions: 'Read carefully. MCQ: one correct. MSQ: one or more correct. Numerical: enter value. No negative marking for numerical.'
+          }
+        ]);
+        DB.set('questions', [
+          {
+            id: 'q1', examId: 'e1', sectionId: 's1', type: 'mcq', num: 1,
+            text: 'A particle moves in a circle of radius $R = 5\\,\\text{m}$ with constant speed. If the centripetal acceleration is $a_c = 20\\,\\text{m/s}^2$, the angular velocity $\\omega$ is:',
+            options: ['$\\omega = 2\\,\\text{rad/s}$', '$\\omega = 4\\,\\text{rad/s}$', '$\\omega = 5\\,\\text{rad/s}$', '$\\omega = 10\\,\\text{rad/s}$'],
+            correct: 0, difficulty: 'medium',
+            explanation: `**Given:** $R = 5\\,\\text{m}$, $a_c = 20\\,\\text{m/s}^2$\n\n**Formula:** $$a_c = \\omega^2 R$$\n\n**Solving for $\\omega$:**\n$$\\omega^2 = \\frac{a_c}{R} = \\frac{20}{5} = 4 \\implies \\boxed{\\omega = 2\\,\\text{rad/s}}$$`
+          },
+          {
+            id: 'q2', examId: 'e1', sectionId: 's1', type: 'numerical', num: 2,
+            text: 'A stone is thrown horizontally from height $H = 80\\,\\text{m}$ with $u = 20\\,\\text{m/s}$. Find time (in seconds) to reach ground. Take $g = 10\\,\\text{m/s}^2$.',
+            correct: 4, difficulty: 'easy',
+            explanation: `**Vertical motion (starts from rest vertically):**\n$$H = \\frac{1}{2}g t^2 \\implies 80 = \\frac{1}{2}(10)t^2$$\n$$t^2 = 16 \\implies \\boxed{t = 4\\,\\text{s}}$$\n\n*Horizontal motion does not affect vertical fall time.*`
+          },
+          {
+            id: 'q3', examId: 'e1', sectionId: 's1', type: 'msq', num: 3,
+            text: 'For SHM $x = A\\sin(\\omega t + \\phi)$, which statements are **CORRECT**?',
+            options: ['Total energy $E = \\frac{1}{2}kA^2$ is constant', 'Velocity is maximum at $x = 0$', 'Acceleration is maximum at $x = \\pm A$', 'Time period depends on amplitude'],
+            correct: [0, 1, 2], difficulty: 'hard',
+            explanation: `**(A) ✓** $E = \\frac{1}{2}kA^2 = \\text{const}$ — energy conserved.\n\n**(B) ✓** $v = \\omega\\sqrt{A^2-x^2}$ is max at $x=0$.\n\n**(C) ✓** $a = -\\omega^2 x$, so max at $x = \\pm A$.\n\n**(D) ✗** Period $T = 2\\pi/\\omega$ is **independent** of amplitude.`
+          },
+          {
+            id: 'q4', examId: 'e1', sectionId: 's2', type: 'mcq', num: 1,
+            text: 'The IUPAC name of $\\text{CH}_3\\text{CH(OH)CH}_2\\text{COOH}$ is:',
+            options: ['3-Hydroxybutanoic acid', '2-Methylmalonic acid', '$\\beta$-Hydroxybutyric acid', '2-Hydroxybutanoic acid'],
+            correct: 0, difficulty: 'easy',
+            explanation: `Longest chain = 4C → **but**anoic acid. $-\\text{OH}$ at C3 → **3-hydroxy**. IUPAC: $$\\boxed{\\text{3-Hydroxybutanoic acid}}$$`
+          },
+          {
+            id: 'q5', examId: 'e1', sectionId: 's3', type: 'mcq', num: 1,
+            text: 'The value of $\\displaystyle\\int_0^{\\pi} \\sin x\\,dx$ is:',
+            options: ['$0$', '$1$', '$2$', '$\\pi$'],
+            correct: 2, difficulty: 'easy',
+            explanation: `$$\\int_0^{\\pi} \\sin x\\,dx = \\Big[-\\cos x\\Big]_0^{\\pi} = (-\\cos\\pi)-(-\\cos 0) = 1+1 = \\boxed{2}$$`
+          },
+          {
+            id: 'q6', examId: 'e1', sectionId: 's3', type: 'numerical', num: 2,
+            text: 'If $z = 3 + 4i$, find $|z|^2$.',
+            correct: 25, difficulty: 'easy',
+            explanation: `$|z| = \\sqrt{3^2+4^2} = \\sqrt{9+16} = 5$ \\\\\n$$\\boxed{|z|^2 = 25}$$`
+          },
+        ]);
+        DB.set('attempts', []);
+        DB.set('inited', true);
+      }
+    })();
+
+    /* ══════ NOTIFICATION ═══════════════════════════════════════════════════ */
+    const NC = React.createContext(null);
+    function NotifProvider({ children }) {
+      const [list, setList] = useState([]);
+      const show = useCallback((msg, type = 'info') => {
+        const id = uid();
+        setList(n => [...n, { id, msg, type }]);
+        setTimeout(() => setList(n => n.filter(x => x.id !== id)), 3600);
+      }, []);
+      const icons = { s: '✓', e: '✕', i: 'ℹ', w: '⚠' };
+      const cls = { s: 'ni-s', e: 'ni-e', i: 'ni-i', w: 'ni-w' };
+      return (
+        <NC.Provider value={show}>
+          {children}
+          <div className="nc">
+            {list.map(n => (
+              <div key={n.id} className={`ni ${cls[n.type] || 'ni-i'}`}>
+                <span style={{ fontWeight: 700 }}>{icons[n.type] || 'ℹ'}</span>{n.msg}
+              </div>
+            ))}
+          </div>
+        </NC.Provider>
+      );
+    }
+    const useN = () => React.useContext(NC);
+
+    /* ══════ AUTH ═══════════════════════════════════════════════════════════ */
+    function AuthPage({ onLogin }) {
+      const [tab, setTab] = useState('login');
+      const [f, setF] = useState({ name: '', email: '', password: '', role: 'student' });
+      const [err, setErr] = useState('');
+      const [busy, setBusy] = useState(false);
+      const notify = useN();
+      const s = k => e => setF(x => ({ ...x, [k]: e.target.value }));
+
+      const login = () => {
+        setErr(''); setBusy(true);
+        setTimeout(() => {
+          const u = DB.get('users', []).find(x => x.email.toLowerCase() === f.email.toLowerCase() && x.password === f.password);
+          if (u) { notify('Welcome, ' + u.name + '!', 's'); onLogin(u); }
+          else setErr('Invalid email or password. Please try again.');
+          setBusy(false);
+        }, 450);
+      };
+
+      const register = () => {
+        setErr('');
+        if (!f.name.trim() || !f.email.trim() || !f.password.trim()) { setErr('All fields are required.'); return; }
+        if (f.password.length < 6) { setErr('Password must be at least 6 characters.'); return; }
+        const users = DB.get('users', []);
+        if (users.find(u => u.email.toLowerCase() === f.email.toLowerCase())) { setErr('This email is already registered.'); return; }
+        const nu = { id: uid(), name: f.name.trim(), email: f.email.trim().toLowerCase(), password: f.password, role: 'student', joinDate: new Date().toISOString().slice(0, 10) };
+        DB.set('users', [...users, nu]);
+        notify('Account created! Welcome, ' + nu.name, 's');
+        onLogin(nu);
+      };
+
+      return (
+        <div className="auth-page">
+          <div className="auth-box">
+            <div className="auth-hd">
+              <div className="auth-logo">Chhatro Bondhu<br />Exam Portal</div>
+              <div className="auth-logo-sub">ছাত্র বন্ধু পরীক্ষা পোর্টাল</div>
+            </div>
+            <div className="auth-bd">
+              <div className="auth-tabs">
+                {[['login', 'Sign In'], ['register', 'Register']].map(([t, l]) => (
+                  <div key={t} className={`auth-tab ${tab === t ? 'on' : ''}`} onClick={() => { setTab(t); setErr(''); }}>
+                    {l}
+                  </div>
+                ))}
+              </div>
+              {tab === 'register' && (
+                <div className="fl">
+                  <label className="flbl">Full Name</label>
+                  <input className="fc" placeholder="Your full name" value={f.name} onChange={s('name')} />
+                </div>
+              )}
+              <div className="fl">
+                <label className="flbl">Email Address</label>
+                <input className="fc" type="email" placeholder="your@email.com" value={f.email} onChange={s('email')} onKeyDown={e => e.key === 'Enter' && (tab === 'login' ? login() : register())} />
+              </div>
+              <div className="fl">
+                <label className="flbl">Password</label>
+                <input className="fc" type="password" placeholder="••••••••" value={f.password} onChange={s('password')} onKeyDown={e => e.key === 'Enter' && (tab === 'login' ? login() : register())} />
+              </div>
+              {err && <div className="auth-err">{err}</div>}
+              <button className="btn btn-blue w-full btn-lg" style={{ width: '100%' }} onClick={tab === 'login' ? login : register} disabled={busy}>
+                {busy ? 'Please wait…' : tab === 'login' ? 'Sign In →' : 'Create Account →'}
+              </button>
+              {tab === 'login' && (
+                <div style={{ marginTop: 14, padding: 11, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 'var(--radius)', fontSize:12,color: 'var(--text2)',lineHeight:1.6}}>
+              <strong>Admin login:</strong> Contact your administrator for credentials.<br />
+              <strong>Students:</strong> Register above to create your account.
+            </div>
+          )}
+          </div>
+        </div>
+    </div >
+  );
+    }
+
+    /* ══════ SIDEBAR ════════════════════════════════════════════════════════ */
+    function Sidebar({ user, active, setActive, onLogout }) {
+      const studentNav = [
+        { id: 'dashboard', ico: '⊞', lbl: 'Dashboard' },
+        { id: 'exams', ico: '📋', lbl: 'Available Exams' },
+        { id: 'results', ico: '📊', lbl: 'My Results' },
+      ];
+      const adminNav = [
+        { id: 'dashboard', ico: '⊞', lbl: 'Dashboard' },
+        { id: 'exams', ico: '📋', lbl: 'Manage Exams' },
+        { id: 'questions', ico: '❓', lbl: 'Question Bank' },
+        { id: 'students', ico: '👥', lbl: 'Students' },
+        { id: 'results', ico: '📊', lbl: 'All Results' },
+      ];
+      const nav = user.role === 'admin' ? adminNav : studentNav;
+      return (
+        <div className="sidebar">
+          <div className="sb-sec">Navigation</div>
+          {nav.map(it => (
+            <div key={it.id} className={`sb-item ${active === it.id ? 'on' : ''}`} onClick={() => setActive(it.id)}>
+              <span style={{ fontSize: 15, width: 18, textAlign: 'center' }}>{it.ico}</span>{it.lbl}
+            </div>
+          ))}
+          <div className="sb-div" />
+          <div className="sb-sec">Account</div>
+          <div className="sb-item">
+            <div style={{ width: 22, height: 22, borderRadius: '50%', background: user.role === 'admin' ? '#d97706' : 'var(--blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="trunc">
+              <div style={{ fontSize: 12, fontWeight: 600 }} className="trunc">{user.name}</div>
+              <div style={{ fontSize: 10, color: 'var(--text3)', textTransform: 'capitalize' }}>{user.role}</div>
+            </div>
+          </div>
+          <div className="sb-item" style={{ color: 'var(--red)' }} onClick={onLogout}>
+            <span style={{ fontSize: 15, width: 18, textAlign: 'center' }}>⎋</span>Sign Out
+          </div>
+        </div>
+      );
+    }
+
+    /* ══════ STUDENT DASHBOARD ══════════════════════════════════════════════ */
+    function StudentDashboard({ user, onStart, onResult }) {
+      const exams = DB.get('exams', []).filter(e => e.status === 'active');
+      const atts = DB.get('attempts', []).filter(a => a.userId === user.id);
+      const avg = atts.length ? Math.round(atts.reduce((s, a) => s + (a.results?.score || 0), 0) / atts.length) : 0;
+      const acc = atts.length ? Math.round(atts.reduce((s, a) => s + (a.results?.correct / (a.results?.total || 1) * 100), 0) / atts.length) : 0;
+      return (
+        <div className="main"><div className="mi">
+          <div className="phd">
+            <div><div className="ptitle">Welcome, {user.name.split(' ')[0]}! 👋</div>
+              <div className="psub">{new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+            </div>
+          </div>
+          <div className="stat-grid">
+            {[{ ico: '📝', v: atts.length, l: 'Exams Attempted' }, { ico: '🏆', v: avg, l: 'Average Score' }, { ico: '🎯', v: acc + '%', l: 'Average Accuracy' }, { ico: '📋', v: exams.length, l: 'Exams Available' }].map(s => (
+              <div key={s.l} className="sc"><div className="si">{s.ico}</div><div className="sv">{s.v}</div><div className="sl">{s.l}</div></div>
+            ))}
+          </div>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Available Exams</div>
+          {exams.length === 0 ? <div className="empty"><div style={{ fontSize: 32, marginBottom: 10 }}>📋</div><div>No exams available yet.</div></div> : (
+            <div className="egrid">
+              {exams.map(exam => {
+                const att = atts.find(a => a.examId === exam.id);
+                const qc = DB.get('questions', []).filter(q => q.examId === exam.id).length;
+                return (
+                  <div key={exam.id} className="ec">
+                    <div className="flex ia jb mb2" style={{ flexWrap: 'wrap', gap: 5 }}>
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>{(exam.tags || []).map(t => <span key={t} className="badge bg-blue">{t}</span>)}</div>
+                      <span className="badge bg-green">Active</span>
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 5 }}>{exam.title}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.5, marginBottom: 11 }}>{exam.description}</div>
+                    <div style={{ display: 'flex', gap: 13, flexWrap: 'wrap', marginBottom: 10, fontSize: 12, color: 'var(--text2)' }}>
+                      <span>⏱ {exam.duration} min</span><span>❓ {qc} Qs</span>
+                      <span>✦ +{exam.markingScheme?.mcq?.correct || 4}/{exam.markingScheme?.mcq?.wrong || '-1'}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 }}>
+                      {(exam.sections || []).map(s => (
+                        <span key={s.id} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 9999, fontWeight: 600, border: `1px solid ${s.color}`, color: s.color, background: s.bgColor || '#f9fafb' }}>{s.name}</span>
+                      ))}
+                    </div>
+                    <div className="divider" style={{ margin: '9px 0' }} />
+                    {att ? (
+                      <div className="flex ia jb">
+                        <span style={{ fontSize: 12, color: 'var(--text2)' }}>Score: <strong className="tg">{att.results?.score || 0}</strong></span>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button className="btn btn-outline btn-sm" onClick={() => onResult(att)}>View Result</button>
+                          <button className="btn btn-gray btn-sm" onClick={() => onStart(exam)}>Reattempt</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button className="btn btn-blue w-full" style={{ width: '100%' }} onClick={() => onStart(exam)}>Start Exam →</button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {atts.length > 0 && (
+            <>
+              <div style={{ fontSize: 15, fontWeight: 700, margin: '20px 0 12px' }}>Recent Attempts</div>
+              <div className="tw">
+                <table>
+                  <thead><tr><th>Exam</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Accuracy</th><th>Date</th><th></th></tr></thead>
+                  <tbody>{[...atts].reverse().map(a => {
+                    const ex = DB.get('exams', []).find(e => e.id === a.examId);
+                    const ac = Math.round((a.results?.correct || 0) / (a.results?.total || 1) * 100);
+                    return (<tr key={a.id}>
+                      <td style={{ fontWeight: 600 }}>{ex?.title || '—'}</td>
+                      <td><span className="tb f7">{a.results?.score || 0}</span></td>
+                      <td><span className="tg f6">{a.results?.correct || 0}</span></td>
+                      <td><span className="tr f6">{a.results?.wrong || 0}</span></td>
+                      <td><span style={{ color: ac > 70 ? 'var(--green)' : ac > 40 ? 'var(--amber)' : 'var(--red)', fontWeight: 600 }}>{ac}%</span></td>
+                      <td className="tsm tm">{new Date(a.date).toLocaleDateString('en-IN')}</td>
+                      <td><button className="btn btn-outline btn-sm" onClick={() => onResult(a)}>Review →</button></td>
+                    </tr>);
+                  })}</tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </div></div>
+      );
+    }
+
+    /* ══════ EXAM START MODAL ═══════════════════════════════════════════════ */
+    function ExamStartModal({ exam, onConfirm, onCancel }) {
+      const [agreed, setAgreed] = useState(false);
+      const qc = DB.get('questions', []).filter(q => q.examId === exam.id).length;
+      const ms = exam.markingScheme || { mcq: { correct: 4, wrong: -1 }, msq: { correct: 4, wrong: 0 }, numerical: { correct: 4, wrong: 0 } };
+      return (
+        <div className="ov">
+          <div className="mo">
+            <div className="moh"><h3>📋 {exam.title}</h3><button className="mox" onClick={onCancel}>✕</button></div>
+            <div className="mob">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9, marginBottom: 14 }}>
+                {[['Duration', exam.duration + ' min'], ['Questions', qc], ['Total Marks', qc * (ms.mcq.correct || 4)]].map(([l, v]) => (
+                  <div key={l} style={{ background: '#f8fafc', border: '1px solid var(--gray-bd)', borderRadius: 'var(--radius)', padding: '11px', textAlign: 'center' }}>
+                    <div className="tb f7" style={{ fontSize: 20 }}>{v}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text2)' }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 7 }}>Marking Scheme</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 14 }}>
+                {[['MCQ', `+${ms.mcq.correct} / ${ms.mcq.wrong}`, 'var(--blue)'], ['MSQ', `+${ms.msq.correct} / 0`, '#7c3aed'], ['Numerical', `+${ms.numerical.correct} / 0`, 'var(--amber)']].map(([l, v, c]) => (
+                  <div key={l} style={{ background: '#f8fafc', border: '1px solid var(--gray-bd)', borderRadius: 'var(--radius)', padding: '8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 12, color: 'var(--text2)' }}>{l}</div>
+                    <div style={{ fontWeight: 700, color: c }}>{v}</div>
+                  </div>
+                ))}
+              </div>
+              {exam.instructions && <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 'var(--radius)', padding: '9px 12px', marginBottom: 13, fontSize: 12, color: '#92400e', lineHeight: 1.6 }}>ℹ {exam.instructions}</div>}
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 7 }}>Important Instructions</div>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {['The exam will begin only after you enable Fullscreen mode.', 'Exiting fullscreen WILL IMMEDIATELY CANCEL your exam.', 'Do not switch browser tabs — violations are logged.', 'Answers are auto-saved every 5 seconds.', 'Right-click is disabled during the exam.', 'Exam auto-submits when time expires.'].map((ins, i) => (
+                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 12, color: 'var(--text2)' }}>
+                    <span style={{ color: 'var(--blue)', flexShrink: 0, marginTop: 2 }}>▸</span>{ins}
+                  </li>
+                ))}
+              </ul>
+              <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => setAgreed(a => !a)}>
+                <div style={{ width: 18, height: 18, borderRadius: 3, border: `2px solid ${agreed ? 'var(--blue)' : 'var(--gray-bd)'}`, background: agreed ? 'var(--blue)' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s', flexShrink: 0 }}>
+                  {agreed && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}
+                </div>
+                <span style={{ fontSize: 13, color: 'var(--text2)' }}>I have read and understood all instructions</span>
+              </div>
+            </div>
+            <div className="mof">
+              <button className="btn btn-gray" onClick={onCancel}>Cancel</button>
+              <button className="btn btn-blue btn-lg" onClick={onConfirm} disabled={!agreed}>Proceed to Fullscreen →</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ══════ FULLSCREEN GATE ════════════════════════════════════════════════ */
+    function FsGate({ onEnter, onBack }) {
+      const [trying, setTrying] = useState(false);
+      const enter = async () => {
+        setTrying(true);
+        try {
+          await document.documentElement.requestFullscreen();
+          onEnter();
+        } catch {
+          setTrying(false);
+          alert('Could not enter fullscreen. Please allow fullscreen access and try again.');
+        }
+      };
+      return (
+        <div className="fs-gate">
+          <div className="fs-icon">⛶</div>
+          <div className="fs-title">Fullscreen Required</div>
+          <div className="fs-sub">This exam must be taken in fullscreen mode. Click the button below to enable fullscreen and begin your exam.</div>
+          <div style={{ background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 'var(--radius2)', padding: '12px 18px', fontSize: 12, color: 'rgba(255,255,255,.75)', maxWidth: 400, textAlign: 'left' }}>
+            ⚠ <strong style={{ color: '#fbbf24' }}>Warning:</strong> If you exit fullscreen at any point during the exam, your test will be immediately cancelled and auto-submitted.
+          </div>
+          <button className="fs-btn" onClick={enter} disabled={trying}>
+            {trying ? 'Enabling…' : 'Enable Fullscreen & Start Exam'}
+          </button>
+          <button style={{ background: 'none', border: '1px solid rgba(255,255,255,.3)', color: 'rgba(255,255,255,.7)', padding: '8px 18px', borderRadius: 'var(--radius)', cursor: 'pointer', fontSize: 13 }} onClick={onBack}>
+            ← Go Back
+          </button>
+        </div>
+      );
+    }
+
+    /* ══════ EXAM INTERFACE ═════════════════════════════════════════════════ */
+    /* 
+      STATE MEANINGS (clearly defined):
+      0 = Not Visited   → grey
+      1 = Not Answered  → red   (visited, no answer)
+      2 = Answered      → green
+      3 = Marked        → purple (no answer, marked for review)
+      4 = Ans+Marked    → purple with green tick (answered AND marked for review)
+    */
+    function ExamInterface({ exam, user, onSubmit, onFsCancel }) {
+      const questions = useMemo(() => DB.get('questions', []).filter(q => q.examId === exam.id), [exam.id]);
+      const sections = exam.sections || [];
+      const ms = exam.markingScheme || { mcq: { correct: 4, wrong: -1 }, msq: { correct: 4, wrong: 0, partial: true }, numerical: { correct: 4, wrong: 0 } };
+
+      const [curSec, setCurSec] = useState(sections[0]?.id || '');
+      const [curIdx, setCurIdx] = useState(0);
+      const [answers, setAnswers] = useState({});// qid → value
+      const [states, setStates] = useState({});  // qid → 0|1|2|3|4
+      const [timeLeft, setTimeLeft] = useState(exam.duration * 60);
+      const [timeSpent, setTimeSpent] = useState({});
+      const [qStart, setQStart] = useState(Date.now());
+      const [showSub, setShowSub] = useState(false);
+      const [tabWarns, setTabWarns] = useState(0);
+      const [saved, setSaved] = useState(false);
+      const notify = useN();
+      const submittedRef = useRef(false);
+
+      const secQs = useMemo(() => questions.filter(q => q.sectionId === curSec), [questions, curSec]);
+      const curQ = secQs[curIdx];
+
+      /* ── helpers ── */
+      const hasAnswer = useCallback((id, ans = answers) => {
+        const a = ans[id];
+        if (a === undefined || a === null || a === '') return false;
+        if (Array.isArray(a) && a.length === 0) return false;
+        return true;
+      }, [answers]);
+
+      /* Mark as visited on enter */
+      useEffect(() => {
+        if (!curQ) return;
+        setStates(s => {
+          if (s[curQ.id] === undefined || s[curQ.id] === 0) {
+            return { ...s, [curQ.id]: 1 };
+          }
+          return s;
+        });
+        setQStart(Date.now());
+      }, [curQ?.id]);
+
+      /* Timer */
+      useEffect(() => {
+        const id = setInterval(() => setTimeLeft(t => {
+          if (t <= 1) { clearInterval(id); doSubmit(true, 'timer'); return 0; }
+          return t - 1;
+        }), 1000);
+        return () => clearInterval(id);
+      }, []);
+
+      /* Autosave feedback */
+      useEffect(() => {
+        const id = setInterval(() => { setSaved(true); setTimeout(() => setSaved(false), 1500); }, 5000);
+        return () => clearInterval(id);
+      }, []);
+
+      /* Fullscreen guard — exit = immediate cancel */
+      useEffect(() => {
+        const fn = () => {
+          if (!document.fullscreenElement && !submittedRef.current) {
+            submittedRef.current = true;
+            notify('⚠ Fullscreen exited — exam cancelled and submitted!', 'e');
+            setTimeout(() => doSubmit(true, 'fullscreen_exit'), 600);
+          }
+        };
+        document.addEventListener('fullscreenchange', fn);
+        return () => document.removeEventListener('fullscreenchange', fn);
+      }, []);
+
+      /* Tab switch */
+      useEffect(() => {
+        const fn = () => {
+          if (document.hidden) {
+            setTabWarns(w => { const n = w + 1; notify(`⚠ Tab violation ${n} detected!`, 'w'); return n; });
+          }
+        };
+        document.addEventListener('visibilitychange', fn);
+        return () => document.removeEventListener('visibilitychange', fn);
+      }, []);
+
+      /* Right-click off */
+      useEffect(() => {
+        const fn = e => e.preventDefault();
+        document.addEventListener('contextmenu', fn);
+        return () => document.removeEventListener('contextmenu', fn);
+      }, []);
+
+      /* Save time on Q */
+      const saveTime = () => {
+        if (curQ) {
+          const el = Math.floor((Date.now() - qStart) / 1000);
+          setTimeSpent(t => ({ ...t, [curQ.id]: (t[curQ.id] || 0) + el }));
+        }
+        setQStart(Date.now());
+      };
+
+      const goTo = (idx, secId) => {
+        saveTime();
+        if (secId && secId !== curSec) setCurSec(secId);
+        setCurIdx(idx);
+      };
+
+      const goNext = () => {
+        saveTime();
+        if (curIdx < secQs.length - 1) { setCurIdx(i => i + 1); }
+        else {
+          const si = sections.findIndex(s => s.id === curSec);
+          if (si < sections.length - 1) {
+            const ns = sections[si + 1]; setCurSec(ns.id); setCurIdx(0);
+            notify('Moved to ' + ns.name, 'i');
+          }
+        }
+      };
+      const goPrev = () => {
+        saveTime();
+        if (curIdx > 0) { setCurIdx(i => i - 1); }
+        else {
+          const si = sections.findIndex(s => s.id === curSec);
+          if (si > 0) {
+            const ps = sections[si - 1];
+            const pqs = questions.filter(q => q.sectionId === ps.id);
+            setCurSec(ps.id); setCurIdx(pqs.length - 1);
+          }
+        }
+      };
+
+      /* ── SET ANSWER — correctly transitions state ── */
+      const setAnswer = useCallback((val) => {
+        if (!curQ) return;
+        const id = curQ.id;
+        setAnswers(prev => {
+          let next = { ...prev };
+          if (curQ.type === 'msq') {
+            const cur = Array.isArray(prev[id]) ? prev[id] : [];
+            next[id] = cur.includes(val) ? cur.filter(x => x !== val) : [...cur, val];
+          } else {
+            next[id] = val;
+          }
+          // Update state BASED ON new answers value (not stale closure)
+          const nowHas = hasAnswer(id, next);
+          setStates(s => {
+            const cur = s[id] ?? 1;
+            // If currently marked (3 or 4), preserve mark, just update answered-ness
+            const isMarked = cur === 3 || cur === 4;
+            if (isMarked) {
+              return { ...s, [id]: nowHas ? 4 : 3 };
+            } else {
+              return { ...s, [id]: nowHas ? 2 : 1 };
+            }
+          });
+          return next;
+        });
+      }, [curQ, hasAnswer]);
+
+      /* ── CLEAR ── */
+      const clearResp = () => {
+        if (!curQ) return;
+        const id = curQ.id;
+        setAnswers(a => { const n = { ...a }; delete n[id]; return n; });
+        setStates(s => {
+          const cur = s[id] ?? 1;
+          const isMarked = cur === 3 || cur === 4;
+          return { ...s, [id]: isMarked ? 3 : 1 };// keep mark, remove answered
+        });
+      };
+
+      /* ── MARK FOR REVIEW ── */
+      const markReview = () => {
+        if (!curQ) return;
+        const id = curQ.id;
+        // Read current answer from state directly
+        setAnswers(prevAns => {
+          const nowHas = hasAnswer(id, prevAns);
+          setStates(s => ({ ...s, [id]: nowHas ? 4 : 3 }));
+          return prevAns;
+        });
+        goNext();
+      };
+
+      /* ── SAVE & NEXT ── */
+      const saveNext = () => {
+        if (!curQ) return;
+        const id = curQ.id;
+        setAnswers(prevAns => {
+          const nowHas = hasAnswer(id, prevAns);
+          setStates(s => {
+            const cur = s[id] ?? 1;
+            const isMarked = cur === 3 || cur === 4;
+            // Save&Next should NOT remove mark if already marked
+            if (isMarked) { return { ...s, [id]: nowHas ? 4 : 3 }; }
+            return { ...s, [id]: nowHas ? 2 : 1 };
+          });
+          return prevAns;
+        });
+        goNext();
+      };
+
+      /* ── SCORE CALC ── */
+      const calcScore = () => {
+        let score = 0, correct = 0, wrong = 0, skipped = 0;
+        const details = {};
+        questions.forEach(q => {
+          const ans = answers[q.id];
+          let status = 'skipped', pts = 0;
+          if (ans === undefined || ans === null || ans === '' || (Array.isArray(ans) && ans.length === 0)) {
+            skipped++;
+          } else if (q.type === 'mcq') {
+            if (parseInt(ans) === parseInt(q.correct)) { pts = ms.mcq.correct; correct++; status = 'correct'; }
+            else { pts = ms.mcq.wrong; wrong++; status = 'wrong'; }
+          } else if (q.type === 'msq') {
+            const aa = (Array.isArray(ans) ? ans : [ans]).map(Number).sort();
+            const ca = (Array.isArray(q.correct) ? q.correct : [q.correct]).map(Number).sort();
+            const full = aa.length === ca.length && aa.every((x, i) => x === ca[i]);
+            if (full) { pts = ms.msq.correct; correct++; status = 'correct'; }
+            else if (ms.msq?.partial) {
+              const pc = aa.filter(x => ca.includes(x)).length;
+              const wc = aa.filter(x => !ca.includes(x)).length;
+              pts = wc > 0 ? 0 : Math.floor((pc / ca.length) * ms.msq.correct);
+              if (pts > 0) { status = 'partial'; correct++; } else { wrong++; status = 'wrong'; }
+            } else { pts = ms.msq.wrong || 0; wrong++; status = 'wrong'; }
+          } else if (q.type === 'numerical') {
+            const pv = parseFloat(ans);
+            const tol = Math.max(0.01, Math.abs(q.correct) * 0.005);
+            if (!isNaN(pv) && Math.abs(pv - q.correct) <= tol) { pts = ms.numerical.correct; correct++; status = 'correct'; }
+            else { pts = ms.numerical.wrong || 0; wrong++; status = 'wrong'; }
+          }
+          score += pts;
+          details[q.id] = { status, pts, userAnswer: ans, correctAnswer: q.correct };
+        });
+        return { score, correct, wrong, skipped, total: questions.length, details };
+      };
+
+      const doSubmit = (auto = false, reason = 'manual') => {
+        if (submittedRef.current) return;
+        submittedRef.current = true;
+        saveTime();
+        try { if (document.fullscreenElement) document.exitFullscreen(); } catch { }
+        const results = calcScore();
+        const sectionResults = sections.map(sec => {
+          const sq = questions.filter(q => q.sectionId === sec.id);
+          let sc = 0, cor = 0, wr = 0, sk = 0;
+          sq.forEach(q => { const d = results.details[q.id]; if (d) { sc += d.pts; if (d.status === 'correct' || d.status === 'partial') cor++; else if (d.status === 'wrong') wr++; else sk++; } else sk++; });
+          return { sectionId: sec.id, sectionName: sec.name, color: sec.color, score: sc, correct: cor, wrong: wr, skipped: sk, total: sq.length };
+        });
+        const att = { id: uid(), examId: exam.id, userId: user.id, date: new Date().toISOString(), answers, states, timeSpent, results, sectionResults, totalTime: exam.duration * 60 - timeLeft, auto, reason, tabWarnings: tabWarns };
+        DB.set('attempts', [...DB.get('attempts', []), att]);
+        onSubmit(att);
+      };
+
+      const fmt = s => {
+        const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+        return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}` : `${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+      };
+      const tc = timeLeft < 300 ? 't-danger' : timeLeft < 600 ? 't-warn' : '';
+
+      const stCounts = [0, 1, 2, 3, 4].map(s => Object.values(states).filter(v => v === s).length);
+      const totalQ = questions.length;
+      const qGlobal = (() => { let n = 0; for (const s of sections) { if (s.id === curSec) return n + curIdx + 1; n += questions.filter(q => q.sectionId === s.id).length; } return 1; })();
+
+      return (
+        <div className="exam-shell">
+          {/* Top bar */}
+          <div className="exam-tb">
+            <div>
+              <div className="exam-title">{exam.title}</div>
+              <div className="exam-sub">Q{qGlobal}/{totalQ} | {user.name}</div>
+            </div>
+            <div className="sec-bar">
+              {sections.map(s => (
+                <div key={s.id} className={`sec-tab ${curSec === s.id ? 'on' : ''}`} onClick={() => { saveTime(); setCurSec(s.id); setCurIdx(0); }}>
+                  {s.name}({questions.filter(q => q.sectionId === s.id).length})
+                </div>
+              ))}
+            </div>
+            <div className="flex ia g2" style={{ flexShrink: 0 }}>
+              {saved && <span style={{ fontSize: 11, color: 'rgba(255,255,255,.65)' }}>✓ Saved</span>}
+              {tabWarns > 0 && <span style={{ background: 'rgba(220,38,38,.3)', color: '#fef2f2', padding: '2px 7px', borderRadius: 3, fontSize: 11, fontWeight: 700 }}>⚠{tabWarns}</span>}
+              <div className={`exam-timer ${tc}`}>{fmt(timeLeft)}</div>
+              <button className="btn btn-red btn-sm" onClick={() => setShowSub(true)}>Submit</button>
+            </div>
+          </div>
+
+          {/* Main question area */}
+          <div className="exam-main">
+            <div className="flex ia jb" style={{ flexWrap: 'wrap', gap: 6 }}>
+              <div className="flex ia g2">
+                <span style={{ fontSize: 13, color: 'var(--text2)', fontWeight: 600 }}>Question {curIdx + 1} of {secQs.length}</span>
+                {curQ && <span className={`qtype qtype-${curQ.type}`}>{curQ.type === 'mcq' ? 'MCQ' : curQ.type === 'msq' ? 'MSQ' : 'Numerical'}</span>}
+              </div>
+              {curQ && <span className="qmarks">{curQ.type === 'mcq' ? `+${ms.mcq.correct} / ${ms.mcq.wrong}` : curQ.type === 'msq' ? `+${ms.msq.correct} / 0` : `+${ms.numerical.correct} / 0`}</span>}
+            </div>
+
+            {curQ && (
+              <div className="qcard">
+                <div className="qbody"><MT text={curQ.text} /></div>
+
+                {/* MCQ */}
+                {curQ.type === 'mcq' && (
+                  <div className="opts">
+                    {(curQ.options || []).map((opt, i) => (
+                      <div key={i} className={`opt ${answers[curQ.id] === i ? 'sel' : ''}`} onClick={() => setAnswer(i)}>
+                        <div className="opt-rd">{answers[curQ.id] === i && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}</div>
+                        <span className="opt-k">{String.fromCharCode(65 + i)}.</span>
+                        <span className="opt-lbl"><MT text={opt} /></span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* MSQ */}
+                {curQ.type === 'msq' && (
+                  <>
+                    <div className="qinstr">One or more options may be correct. Select all that apply.</div>
+                    <div className="opts">
+                      {(curQ.options || []).map((opt, i) => {
+                        const sel = (Array.isArray(answers[curQ.id]) ? answers[curQ.id] : []).includes(i);
+                        return (
+                          <div key={i} className={`opt ${sel ? 'sel-m' : ''}`} onClick={() => setAnswer(i)}>
+                            <div className="opt-cb">{sel && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}</div>
+                            <span className="opt-k">{String.fromCharCode(65 + i)}.</span>
+                            <span className="opt-lbl"><MT text={opt} /></span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
+                {/* Numerical */}
+                {curQ.type === 'numerical' && (
+                  <>
+                    <div className="qinstr">Enter your numerical answer (integer or decimal).</div>
+                    <div className="num-w">
+                      <input type="number" step="any" className="num-f" value={answers[curQ.id] ?? ''} onChange={e => setAnswer(e.target.value)} placeholder="Enter answer" />
+                      <div className="num-kp">
+                        {['7', '8', '9', '4', '5', '6', '1', '2', '3', '.', '+/-', '0'].map(k => (
+                          <button key={k} className={`nk ${k === '+/-' ? 'nk-pm' : ''}`} onClick={() => {
+                            const c = String(answers[curQ.id] ?? '');
+                            if (k === '+/-') setAnswer(c.startsWith('-') ? c.slice(1) : '-' + c);
+                            else setAnswer(c + k);
+                          }}>{k}</button>
+                        ))}
+                        <button className="nk nk-bs" style={{ gridColumn: 'span 2' }} onClick={() => setAnswer(String(answers[curQ.id] ?? '').slice(0, -1))}>⌫ Del</button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <div style={{ marginTop: 11, display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: 'var(--text3)' }}>
+                  <span>Time on this Q: {Math.floor((timeSpent[curQ?.id] || 0) / 60)}m {(timeSpent[curQ?.id] || 0) % 60}s</span>
+                  {curQ.difficulty && <span style={{ textTransform: 'capitalize' }}>Difficulty: {curQ.difficulty}</span>}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Palette Sidebar */}
+          <div className="exam-side">
+            <div className="pal-hd">Question Palette</div>
+            <div className="pal-legend">
+              {[[0, '#808080', 'Not Visited'], [1, '#c0392b', 'Not Answered'], [2, '#1a7a3c', 'Answered'], [3, '#6c3483', 'Marked (No Ans)']].map(([s, c, l]) => (
+                <div key={s} className="pl-item"><div className="pl-dot" style={{ background: c }} /><span>{l}</span></div>
+              ))}
+              <div className="pl-item" style={{ gridColumn: '1/-1' }}>
+                <div className="pl-dot" style={{ background: '#6c3483', position: 'relative', overflow: 'visible' }}>
+                  <span style={{ position: 'absolute', bottom: -1, right: -1, width: 7, height: 7, background: 'var(--green)', borderRadius: '50%', display: 'block', border: '1px solid #fff' }} />
+                </div>
+                <span>Answered + Marked</span>
+              </div>
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {sections.map(sec => {
+                const sq = questions.filter(q => q.sectionId === sec.id);
+                return (
+                  <div key={sec.id}>
+                    <div className="pal-sec" style={{ color: sec.color, background: sec.bgColor || '#f0f0f0', borderColor: sec.color + '30' }}>{sec.name}</div>
+                    <div className="pal-grid">
+                      {sq.map((q, idx) => {
+                        const st = states[q.id] ?? 0;
+                        const isCur = curSec === sec.id && curIdx === idx;
+                        return (
+                          <button key={q.id} className={`pb p${st} ${isCur ? 'cur' : ''}`} onClick={() => goTo(idx, sec.id)} title={['Not Visited', 'Not Answered', 'Answered', 'Marked', 'Ans+Marked'][st]}>
+                            {q.num || idx + 1}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="pal-sum">
+              {[['Answered', stCounts[2], 'var(--green)'], ['Ans+Marked', stCounts[4], 'var(--purple)'], ['Marked', stCounts[3], 'var(--purple)'], ['Not Ans.', stCounts[1], 'var(--red)'], ['Not Visited', stCounts[0], 'var(--gray)']].map(([l, c, col]) => (
+                <div key={l} className="ps-row"><span>{l}</span><span className="ps-n" style={{ color: col }}>{c}</span></div>
+              ))}
+              <div className="ps-row" style={{ borderTop: '1px solid var(--gray-bd)', paddingTop: 3, marginTop: 3 }}>
+                <span style={{ fontWeight: 700 }}>Total</span><span className="ps-n tb">{totalQ}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="exam-foot">
+            <div className="ef-l">
+              <button className="btn btn-gray btn-sm" onClick={goPrev} disabled={curIdx === 0 && sections.findIndex(s => s.id === curSec) === 0}>◀ Previous</button>
+              <button className="btn btn-purple btn-sm" onClick={markReview}>Mark for Review &amp; Next</button>
+            </div>
+            <div className="ef-r">
+              <button className="btn btn-gray btn-sm" onClick={clearResp}>Clear Response</button>
+              <button className="btn btn-blue btn-sm" onClick={saveNext}>Save &amp; Next ▶</button>
+            </div>
+          </div>
+
+          {/* Submit Modal */}
+          {showSub && (
+            <div className="ov">
+              <div className="mo">
+                <div className="moh"><h3>⚠ Confirm Submission</h3><button className="mox" onClick={() => setShowSub(false)}>✕</button></div>
+                <div className="mob">
+                  <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12 }}>Review your response summary before submitting.</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8, marginBottom: 14 }}>
+                    {[['Answered', stCounts[2], 'var(--green-lt)', 'var(--green)', '#86efac'], ['Not Answered', stCounts[1], 'var(--red-lt)', 'var(--red)', '#fca5a5'], ['Ans + Marked', stCounts[4], 'var(--purple-lt)', 'var(--purple)', '#d8b4fe'], ['Marked (No Ans)', stCounts[3], 'var(--amber-lt)', 'var(--amber)', '#fcd34d'], ['Not Visited', totalQ - Object.keys(states).length, 'var(--gray-lt)', 'var(--gray)', '#d1d5db'], ['Total', totalQ, 'var(--blue-lt)', 'var(--blue)', '#93c5fd']].map(([l, v, bg, tc, bc]) => (
+                      <div key={l} style={{ background: bg, border: `1px solid ${bc}`, borderRadius: 'var(--radius)', padding: '10px 13px', textAlign: 'center' }}>
+                        <div style={{ fontSize: 22, fontWeight: 700, color: tc }}>{v}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>{l}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 'var(--radius)', padding: '9px 13px', fontSize: 12, color: '#92400e' }}>
+                    ⚠ Once submitted, you cannot modify answers. Time remaining: <strong>{fmt(timeLeft)}</strong>
+                  </div>
+                </div>
+                <div className="mof">
+                  <button className="btn btn-gray" onClick={() => setShowSub(false)}>Continue Exam</button>
+                  <button className="btn btn-red btn-lg" onClick={() => { setShowSub(false); doSubmit(false, 'manual'); }}>Final Submit</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    /* ══════ RESULT PAGE ════════════════════════════════════════════════════ */
+    function ResultPage({ attempt, exam, onBack }) {
+      const questions = DB.get('questions', []).filter(q => q.examId === exam.id);
+      const [tab, setTab] = useState('overview');
+      const [aiEx, setAiEx] = useState({});
+      const [aiLd, setAiLd] = useState({});
+      const notify = useN();
+      const { results, sectionResults } = attempt;
+      const totalMarks = questions.length * (exam.markingScheme?.mcq?.correct || 4);
+      const accuracy = Math.round((results.correct / (results.total || 1)) * 100);
+
+      const mockRank = useMemo(() => {
+        const d = Array.from({ length: 500 }, () => Math.floor(Math.random() * totalMarks));
+        d.push(results.score); d.sort((a, b) => b - a);
+        const r = d.indexOf(results.score) + 1;
+        return { rank: r, percentile: Math.round((1 - r / d.length) * 100), of: d.length };
+      }, [results.score, totalMarks]);
+
+      const getAI = async (q) => {
+        if (aiEx[q.id] || aiLd[q.id]) return;
+        setAiLd(l => ({ ...l, [q.id]: true }));
+        try {
+          const det = results.details[q.id];
+          const ua = det?.userAnswer;
+          const uaText = q.type === 'numerical' ? ua : q.type === 'mcq' ? (ua !== undefined && ua !== null && q.options ? q.options[ua] : 'Not answered') : (Array.isArray(ua) && q.options ? ua.map(i => q.options[i]).join(', ') : 'Not answered');
+          const caText = q.type === 'numerical' ? q.correct : q.type === 'mcq' ? (q.options ? q.options[q.correct] : '') : (Array.isArray(q.correct) && q.options ? q.correct.map(i => q.options[i]).join(', ') : '');
+          const prompt = `You are an expert teacher for competitive exams (JEE, GATE, CAT). Provide a complete, detailed step-by-step solution.
+
+Question: ${q.text}
+${q.options ? 'Options:\n' + q.options.map((o, i) => `(${String.fromCharCode(65 + i)}) ${o}`).join('\n') : ''}
+Correct Answer: ${caText}
+Student's Answer: ${uaText} [${det?.status || 'skipped'}]
+
+Provide:
+1. Complete step-by-step solution with all mathematical working
+2. Key concept/formula used
+3. Why wrong options are incorrect (for MCQ/MSQ)
+4. Common mistake to avoid
+
+Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emphasis. Be thorough.`;
+          const res = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+          });
+          const data = await res.json();
+          setAiEx(e => ({ ...e, [q.id]: data.content?.[0]?.text || 'Unable to generate explanation.' }));
+        } catch { notify('Failed to load AI explanation', 'e'); setAiEx(e => ({ ...e, [q.id]: 'Error loading explanation.' })); }
+        finally { setAiLd(l => ({ ...l, [q.id]: false })); }
+      };
+
+      const fmtT = s => { const m = Math.floor(s / 60), ss = s % 60; return `${m}m ${ss}s`; };
+
+      return (
+        <div className="main"><div className="mi">
+          <div className="flex ia g2 mb3">
+            <button className="btn btn-outline btn-sm" onClick={onBack}>← Back</button>
+            <div style={{ fontSize: 17, fontWeight: 700 }}>{exam.title} — Result</div>
+            {attempt.reason === 'fullscreen_exit' && <span className="badge bg-red">Cancelled (Fullscreen Exit)</span>}
+            {attempt.reason === 'timer' && <span className="badge bg-amber">Auto-submitted (Time Up)</span>}
+          </div>
+
+          {/* Hero */}
+          <div className="res-hero">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 28, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+              <div>
+                <div className="s-ring"><div className="s-num">{results.score}</div><div className="s-tot">/{totalMarks}</div></div>
+              </div>
+              <div className="rmg" style={{ flex: 1, minWidth: 280 }}>
+                {[{ v: `${mockRank.percentile}th`, l: 'Percentile' }, { v: '#' + mockRank.rank, l: 'Simulated Rank' }, { v: accuracy + '%', l: 'Accuracy' }, { v: fmtT(attempt.totalTime || 0), l: 'Time Used' }, { v: results.correct, l: 'Correct' }, { v: results.wrong, l: 'Wrong' }].map(m => (
+                  <div key={m.l} className="rmi"><div className="rmv">{m.v}</div><div className="rml">{m.l}</div></div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="tabs">
+            {[['overview', 'Overview'], ['section', 'Section Analysis'], ['review', 'Question Review']].map(([id, lbl]) => (
+              <div key={id} className={`tab ${tab === id ? 'on' : ''}`} onClick={() => setTab(id)}>{lbl}</div>
+            ))}
+          </div>
+
+          {tab === 'overview' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div className="card">
+                <div className="chd">Section-wise Performance</div>
+                {(sectionResults || []).map(sec => {
+                  const sq = questions.filter(q => q.sectionId === sec.sectionId);
+                  const max = sq.length * (exam.markingScheme?.mcq?.correct || 4);
+                  const pct = max > 0 ? Math.max(0, Math.round((sec.score / max) * 100)) : 0;
+                  return (
+                    <div key={sec.sectionId} className="spr">
+                      <div style={{ minWidth: 90, fontSize: 13, fontWeight: 600, color: sec.color }}>{sec.sectionName}</div>
+                      <div className="spr-bar"><div className="spr-fill" style={{ width: pct + '%', background: sec.color }} /></div>
+                      <div style={{ minWidth: 58, fontSize: 13, fontWeight: 600, color: sec.color, textAlign: 'right' }}>{sec.score}/{max}</div>
+                      <div style={{ minWidth: 36, fontSize: 12, color: 'var(--text2)', textAlign: 'right' }}>{pct}%</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="card">
+                <div className="chd">Score Breakdown</div>
+                {[['Marks Gained', '+' + (results.correct * (exam.markingScheme?.mcq?.correct || 4)), 'var(--green)'], ['Marks Lost', (results.wrong * (exam.markingScheme?.mcq?.wrong || 0)), 'var(--red)'], ['Net Score', results.score, 'var(--blue)'], ['Unattempted', results.skipped, 'var(--gray)']].map(([l, v, c]) => (
+                  <div key={l} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0', fontSize: 13 }}>
+                    <span className="tm">{l}</span><span style={{ fontWeight: 700, color: c }}>{v}</span>
+                  </div>
+                ))}
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 4 }}>Score %: {Math.max(0, Math.round(results.score / totalMarks * 100))}%</div>
+                  <div className="pb-outer"><div className="pb-inner" style={{ width: Math.max(0, results.score / totalMarks * 100) + '%', background: 'var(--blue)' }} /></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'section' && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 13 }}>
+              {(sectionResults || []).map(sec => {
+                const sq = questions.filter(q => q.sectionId === sec.sectionId);
+                const max = sq.length * (exam.markingScheme?.mcq?.correct || 4);
+                const ac = Math.round((sec.correct / (sec.total || 1)) * 100);
+                return (
+                  <div key={sec.sectionId} className="card">
+                    <div className="chd" style={{ color: sec.color }}>{sec.sectionName}</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8, marginBottom: 11 }}>
+                      {[['Score', sec.score + '/' + max, sec.color], ['Correct', sec.correct, 'var(--green)'], ['Wrong', sec.wrong, 'var(--red)'], ['Skipped', sec.skipped, 'var(--gray)']].map(([l, v, c]) => (
+                        <div key={l} style={{ background: '#f8fafc', border: '1px solid var(--gray-bd)', borderRadius: 'var(--radius)', padding: '9px', textAlign: 'center' }}>
+                          <div style={{ fontSize: 17, fontWeight: 700, color: c }}>{v}</div>
+                          <div style={{ fontSize: 10, color: 'var(--text3)' }}>{l}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 4 }}>Accuracy: {ac}%</div>
+                    <div className="pb-outer"><div className="pb-inner" style={{ width: ac + '%', background: sec.color }} /></div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {tab === 'review' && (
+            <div>
+              <p style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 13 }}>Full review with correct answers, explanations, and AI-generated detailed solutions.</p>
+              {questions.map((q, idx) => {
+                const det = results.details[q.id];
+                if (!det) return null;
+                const cls = det.status === 'correct' ? 'qri-c' : det.status === 'skipped' ? 'qri-s' : 'qri-w';
+                const sec = exam.sections?.find(s => s.id === q.sectionId);
+                const corArr = Array.isArray(q.correct) ? q.correct : [q.correct];
+                const userArr = q.type === 'msq' ? (Array.isArray(det.userAnswer) ? det.userAnswer : []) : (det.userAnswer !== undefined && det.userAnswer !== null ? [det.userAnswer] : []);
+                return (
+                  <div key={q.id} className={`qri ${cls}`}>
+                    <div className="qrh">
+                      <div className="flex ia g2" style={{ flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 700, fontSize: 13 }}>Q{idx + 1}.</span>
+                        {sec && <span style={{ fontSize: 11, color: sec.color, border: `1px solid ${sec.color}40`, padding: '1px 7px', borderRadius: 9999, background: sec.bgColor || '#f9fafb' }}>{sec.name}</span>}
+                        <span className={`qtype qtype-${q.type}`}>{q.type.toUpperCase()}</span>
+                        {q.difficulty && <span className="badge bg-gray" style={{ textTransform: 'capitalize' }}>{q.difficulty}</span>}
+                      </div>
+                      <div className="flex ia g3">
+                        <span style={{ fontSize: 11, color: 'var(--text3)' }}>⏱ {attempt.timeSpent?.[q.id] || 0}s</span>
+                        <span style={{ fontWeight: 700, fontSize: 13, color: det.status === 'correct' ? 'var(--green)' : det.status === 'skipped' ? 'var(--gray)' : 'var(--red)' }}>
+                          {det.status === 'correct' ? '+' + det.pts : det.status === 'skipped' ? '—' : det.pts}
+                        </span>
+                        <span className={`badge ${det.status === 'correct' ? 'bg-green' : det.status === 'skipped' ? 'bg-gray' : 'bg-red'}`}>
+                          {det.status === 'correct' ? '✓ Correct' : det.status === 'skipped' ? 'Skipped' : '✗ Wrong'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="qrb">
+                      <div style={{ fontSize: 14, lineHeight: 1.85, marginBottom: 10 }}><MT text={q.text} /></div>
+
+                      {/* Options review */}
+                      {q.options && q.options.map((opt, oi) => {
+                        const isC = corArr.map(Number).includes(oi);
+                        const isU = userArr.map(Number).includes(oi);
+                        const rc = isC ? 'orv-c' : isU && !isC ? 'orv-w' : 'orv-p';
+                        return (
+                          <div key={oi} className={`orv ${rc}`}>
+                            <span style={{ fontWeight: 700, fontSize: 12, minWidth: 19 }}>{String.fromCharCode(65 + oi)}.</span>
+                            <span style={{ flex: 1, fontSize: 13 }}><MT text={opt} /></span>
+                            {isC && <span style={{ fontSize: 11, color: 'var(--green)', fontWeight: 700, whiteSpace: 'nowrap' }}>✓ Correct</span>}
+                            {isU && !isC && <span style={{ fontSize: 11, color: 'var(--red)', fontWeight: 700, whiteSpace: 'nowrap' }}>✗ Your answer</span>}
+                          </div>
+                        );
+                      })}
+
+                      {q.type === 'numerical' && (
+                        <div style={{ display: 'flex', gap: 18, fontSize: 13, margin: '7px 0' }}>
+                          <span>Your answer: <strong style={{ color: det.status === 'correct' ? 'var(--green)' : 'var(--red)' }}>{det.userAnswer ?? '—'}</strong></span>
+                          <span>Correct: <strong className="tg">{q.correct}</strong></span>
+                        </div>
+                      )}
+
+                      {/* Admin-written explanation */}
+                      {q.explanation && !aiEx[q.id] && (
+                        <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 'var(--radius)', padding: '11px 13px', marginTop: 10 }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 7 }}>📖 Solution</div>
+                          <div style={{ fontSize: 13, lineHeight: 1.9 }}><MT text={q.explanation} /></div>
+                        </div>
+                      )}
+
+                      {/* AI explanation */}
+                      {aiEx[q.id] && (
+                        <div className="ai-box">
+                          <div className="ai-hd">🤖 AI Detailed Explanation</div>
+                          <div className="ai-body"><MT text={aiEx[q.id]} /></div>
+                        </div>
+                      )}
+                      {aiLd[q.id] && (
+                        <div className="ai-box">
+                          <div className="ai-spin">🤖 Generating AI explanation<span className="dots"><span>.</span><span>.</span><span>.</span></span></div>
+                        </div>
+                      )}
+
+                      {!aiEx[q.id] && !aiLd[q.id] && (
+                        <button className="btn btn-outline btn-sm mt2" style={{ fontSize: 12 }} onClick={() => getAI(q)}>🤖 AI Explain</button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div></div>
+      );
+    }
+
+    /* ══════ ADMIN DASHBOARD ════════════════════════════════════════════════ */
+    function AdminDash() {
+      const exams = DB.get('exams', []);
+      const questions = DB.get('questions', []);
+      const attempts = DB.get('attempts', []);
+      const students = DB.get('users', []).filter(u => u.role === 'student');
+      const avg = attempts.length ? Math.round(attempts.reduce((s, a) => s + (a.results?.score || 0), 0) / attempts.length) : 0;
+      return (
+        <div className="main"><div className="mi">
+          <div className="phd"><div><div className="ptitle">Admin Dashboard</div><div className="psub">Platform overview</div></div></div>
+          <div className="stat-grid">
+            {[{ ico: '📋', v: exams.length, l: 'Total Exams' }, { ico: '❓', v: questions.length, l: 'Questions' }, { ico: '👥', v: students.length, l: 'Students' }, { ico: '📝', v: attempts.length, l: 'Attempts' }, { ico: '📊', v: avg, l: 'Avg Score' }].map(s => (
+              <div key={s.l} className="sc"><div className="si">{s.ico}</div><div className="sv">{s.v}</div><div className="sl">{s.l}</div></div>
+            ))}
+          </div>
+          <div className="card">
+            <div className="chd">Recent Attempts</div>
+            {attempts.length === 0 ? <div className="empty">No attempts yet.</div> : (
+              <div className="tw">
+                <table>
+                  <thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Accuracy</th><th>Date</th></tr></thead>
+                  <tbody>{[...attempts].reverse().slice(0, 10).map(a => {
+                    const ex = exams.find(e => e.id === a.examId);
+                    const u = DB.get('users', []).find(x => x.id === a.userId);
+                    const ac = Math.round((a.results?.correct || 0) / (a.results?.total || 1) * 100);
+                    return (<tr key={a.id}>
+                      <td style={{ fontWeight: 600 }}>{u?.name || 'Unknown'}</td>
+                      <td className="tsm tm">{ex?.title || '—'}</td>
+                      <td className="tb f7">{a.results?.score || 0}</td>
+                      <td><span style={{ color: ac > 70 ? 'var(--green)' : ac > 40 ? 'var(--amber)' : 'var(--red)', fontWeight: 600 }}>{ac}%</span></td>
+                      <td className="tsm td">{new Date(a.date).toLocaleDateString('en-IN')}</td>
+                    </tr>);
+                  })}</tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div></div>
+      );
+    }
+
+    /* ══════ ADMIN EXAM MANAGER ═════════════════════════════════════════════ */
+    function AdminExams({ onGotoQ }) {
+      const [exams, setEx] = useState(DB.get('exams', []));
+      const [showCr, setShowCr] = useState(false);
+      const [editE, setEditE] = useState(null);
+      const blank = {
+        title: '', description: '', duration: 180, tags: '', instructions: '',
+        sections: [{ id: uid(), name: 'Physics', color: '#2563eb', bgColor: '#dbeafe' }, { id: uid(), name: 'Chemistry', color: '#059669', bgColor: '#d1fae5' }, { id: uid(), name: 'Mathematics', color: '#dc2626', bgColor: '#fee2e2' }],
+        markingScheme: { mcq: { correct: 4, wrong: -1 }, msq: { correct: 4, wrong: 0, partial: true }, numerical: { correct: 4, wrong: 0 } }
+      };
+      const [f, setF] = useState(blank);
+      const notify = useN();
+      const rf = () => setEx(DB.get('exams', []));
+      const s = k => v => setF(x => ({ ...x, [k]: v }));
+
+      const openCr = () => { setEditE(null); setF(blank); setShowCr(true); };
+      const openEd = (e) => { setEditE(e); setF({ ...e, tags: (e.tags || []).join(', ') }); setShowCr(true); };
+      const addSec = () => setF(x => ({ ...x, sections: [...x.sections, { id: uid(), name: 'New Section', color: '#8b5cf6', bgColor: '#ede9fe' }] }));
+      const rmSec = (i) => setF(x => ({ ...x, sections: x.sections.filter((_, j) => j !== i) }));
+      const setSec = (i, k, v) => setF(x => { const a = [...x.sections]; a[i] = { ...a[i], [k]: v }; return { ...x, sections: a }; });
+      const setMS = (t, k, v) => setF(x => ({ ...x, markingScheme: { ...x.markingScheme, [t]: { ...x.markingScheme[t], [k]: v } } }));
+
+      const save = () => {
+        if (!f.title.trim()) { notify('Exam title required', 'e'); return; }
+        if (!f.sections.length) { notify('At least one section required', 'e'); return; }
+        const all = DB.get('exams', []);
+        const ex = { ...f, id: editE?.id || uid(), status: 'active', tags: (f.tags || '').split(',').map(t => t.trim()).filter(Boolean), createdAt: editE?.createdAt || new Date().toISOString().slice(0, 10) };
+        DB.set('exams', editE ? all.map(e => e.id === editE.id ? ex : e) : [...all, ex]);
+        rf(); setShowCr(false); notify(editE ? 'Exam updated!' : 'Exam created!', 's');
+      };
+      const del = (id) => {
+        if (!confirm('Delete this exam and all its questions?')) return;
+        DB.set('exams', DB.get('exams', []).filter(e => e.id !== id));
+        DB.set('questions', DB.get('questions', []).filter(q => q.examId !== id));
+        rf(); notify('Exam deleted', 's');
+      };
+      const tog = (e) => {
+        const all = DB.get('exams', []);
+        DB.set('exams', all.map(x => x.id === e.id ? { ...x, status: x.status === 'active' ? 'inactive' : 'active' } : x));
+        rf(); notify(`Exam ${e.status === 'active' ? 'deactivated' : 'activated'}`, 'i');
+      };
+
+      return (
+        <div className="main"><div className="mi">
+          <div className="phd"><div><div className="ptitle">Manage Exams</div></div><button className="btn btn-blue" onClick={openCr}>+ Create Exam</button></div>
+          <div className="tw">
+            <table>
+              <thead><tr><th>Title</th><th>Duration</th><th>Questions</th><th>Attempts</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                {exams.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', padding: 36, color: 'var(--text3)' }}>No exams yet. Create one!</td></tr>}
+                {exams.map(e => {
+                  const qc = DB.get('questions', []).filter(q => q.examId === e.id).length;
+                  const ac = DB.get('attempts', []).filter(a => a.examId === e.id).length;
+                  return (<tr key={e.id}>
+                    <td>
+                      <div style={{ fontWeight: 600 }}>{e.title}</div>
+                      <div style={{ marginTop: 2 }}>{(e.tags || []).map(t => <span key={t} className="badge bg-blue" style={{ marginRight: 3 }}>{t}</span>)}</div>
+                    </td>
+                    <td className="tm">{e.duration} min</td>
+                    <td className="tb f7">{qc}</td>
+                    <td className="tm">{ac}</td>
+                    <td><span className={`badge ${e.status === 'active' ? 'bg-green' : 'bg-red'}`}>{e.status}</span></td>
+                    <td>
+                      <div className="flex g2">
+                        <button className="btn btn-outline btn-sm" onClick={() => onGotoQ(e.id)}>Questions</button>
+                        <button className="btn btn-gray btn-sm" onClick={() => openEd(e)}>Edit</button>
+                        <button className="btn btn-gray btn-sm" onClick={() => tog(e)}>{e.status === 'active' ? 'Pause' : 'Activate'}</button>
+                        <button className="btn btn-sm" style={{ background: 'var(--red-lt)', color: 'var(--red)', border: '1px solid #fca5a5' }} onClick={() => del(e.id)}>Del</button>
+                      </div>
+                    </td>
+                  </tr>);
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {showCr && (
+            <div className="ov">
+              <div className="mo mo-lg">
+                <div className="moh"><h3>{editE ? 'Edit Exam' : 'Create Exam'}</h3><button className="mox" onClick={() => setShowCr(false)}>✕</button></div>
+                <div className="mob">
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 11 }}>
+                    <div className="fl" style={{ gridColumn: '1/-1' }}><label className="flbl">Exam Title *</label><input className="fc" value={f.title} onChange={e => s('title')(e.target.value)} placeholder="e.g. JEE Main Mock Test 2025" /></div>
+                    <div className="fl" style={{ gridColumn: '1/-1' }}><label className="flbl">Description</label><textarea className="fc" rows={2} value={f.description} onChange={e => s('description')(e.target.value)} /></div>
+                    <div className="fl"><label className="flbl">Duration (min) *</label><input type="number" className="fc" value={f.duration} onChange={e => s('duration')(parseInt(e.target.value) || 180)} min={1} /></div>
+                    <div className="fl"><label className="flbl">Tags (comma-separated)</label><input className="fc" value={f.tags} onChange={e => s('tags')(e.target.value)} placeholder="JEE, Mock, 2025" /></div>
+                    <div className="fl" style={{ gridColumn: '1/-1' }}><label className="flbl">Instructions (shown before exam)</label><textarea className="fc" rows={2} value={f.instructions} onChange={e => s('instructions')(e.target.value)} /></div>
+                  </div>
+                  <div className="divider" />
+                  <div style={{ fontWeight: 700, marginBottom: 9, fontSize: 13 }}>Sections</div>
+                  {f.sections.map((sec, i) => (
+                    <div key={sec.id} style={{ display: 'flex', gap: 7, alignItems: 'center', marginBottom: 5 }}>
+                      <input className="fc" style={{ flex: 1 }} value={sec.name} onChange={e => setSec(i, 'name', e.target.value)} placeholder="Section name" />
+                      <input type="color" value={sec.color} onChange={e => setSec(i, 'color', e.target.value)} style={{ width: 34, height: 30, border: '1px solid var(--gray-bd)', borderRadius: 'var(--radius)', cursor: 'pointer', padding: 2 }} />
+                      {f.sections.length > 1 && <button className="btn btn-sm" style={{ background: 'var(--red-lt)', color: 'var(--red)' }} onClick={() => rmSec(i)}>✕</button>}
+                    </div>
+                  ))}
+                  <button className="btn btn-gray btn-sm mt2" onClick={addSec}>+ Add Section</button>
+                  <div className="divider" />
+                  <div style={{ fontWeight: 700, marginBottom: 9, fontSize: 13 }}>Marking Scheme</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9 }}>
+                    {[['MCQ', 'mcq'], ['MSQ', 'msq'], ['Numerical', 'numerical']].map(([lbl, t]) => (
+                      <div key={t} style={{ background: '#f8fafc', border: '1px solid var(--gray-bd)', borderRadius: 'var(--radius)', padding: '11px' }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 7 }}>{lbl}</div>
+                        {[['Correct', f.markingScheme[t].correct, 'correct'], ['Wrong', f.markingScheme[t].wrong, 'wrong']].map(([l, v, k]) => (
+                          <div key={k} style={{ display: 'flex', gap: 7, alignItems: 'center', marginBottom: 5 }}>
+                            <label style={{ fontSize: 11, color: 'var(--text2)', minWidth: 46 }}>{l}:</label>
+                            <input type="number" step="0.25" className="fc" style={{ width: 58 }} value={v} onChange={e => setMS(t, k, parseFloat(e.target.value) || 0)} />
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="mof">
+                  <button className="btn btn-gray" onClick={() => setShowCr(false)}>Cancel</button>
+                  <button className="btn btn-blue" onClick={save}>{editE ? 'Update' : 'Create Exam'}</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div></div>
+      );
+    }
+
+    /* ══════ MATH SYMBOLS ══════════════════════════════════════════════════ */
+    const SYMS = [
+      ['\\frac{a}{b}', 'a/b'], ['x^{2}', 'x²'], ['x^{n}', 'xⁿ'], ['\\sqrt{x}', '√x'], ['\\sqrt[n]{x}', 'ⁿ√x'],
+      ['\\int', '∫'], ['\\int_a^b', '∫ₐᵇ'], ['\\sum_{i=1}^{n}', 'Σ'], ['\\lim_{x\\to 0}', 'lim'],
+      ['\\infty', '∞'], ['\\alpha', 'α'], ['\\beta', 'β'], ['\\gamma', 'γ'], ['\\delta', 'δ'],
+      ['\\theta', 'θ'], ['\\omega', 'ω'], ['\\lambda', 'λ'], ['\\mu', 'μ'], ['\\sigma', 'σ'],
+      ['\\pi', 'π'], ['\\Delta', 'Δ'], ['\\Sigma', 'Σ'], ['\\vec{v}', 'v⃗'], ['\\hat{n}', 'n̂'],
+      ['\\leq', '≤'], ['\\geq', '≥'], ['\\neq', '≠'], ['\\approx', '≈'], ['\\pm', '±'],
+      ['\\times', '×'], ['\\div', '÷'], ['\\cdot', '·'], ['\\circ', '°'],
+      ['\\text{m/s}', 'm/s'], ['\\text{m/s}^2', 'm/s²'], ['\\text{kg}', 'kg'], ['\\text{J}', 'J'], ['\\text{N}', 'N'],
+      ['\\boxed{x}', '□x'], ['\\because', '∵'], ['\\therefore', '∴'], ['\\implies', '⟹'], ['\\iff', '⟺'],
+    ];
+
+    /* ══════ QUESTION EDITOR ════════════════════════════════════════════════ */
+    function QuestionEditor({ examId, editQ, onSave, onCancel }) {
+      const exams = DB.get('exams', []);
+      const blank = { examId: examId || exams[0]?.id || '', sectionId: '', type: 'mcq', num: 1, difficulty: 'medium', text: '', options: ['', '', '', ''], correct: null, explanation: '' };
+      const [f, setF] = useState(editQ ? { ...editQ } : { ...blank, sectionId: (exams.find(e => e.id == (examId || exams[0]?.id))?.sections || [])[0]?.id || '' });
+      const [gen, setGen] = useState(false);
+      const notify = useN();
+      const tRef = useRef(null);
+      const eRef = useRef(null);
+
+      useEffect(() => { if (editQ) setF({ ...editQ }); }, [editQ?.id]);
+
+      const curExam = exams.find(e => e.id === f.examId);
+      const sections = curExam?.sections || [];
+
+      const s = k => v => setF(x => ({ ...x, [k]: typeof v === 'function' ? v(x[k]) : v }));
+      const setOpt = (i, v) => setF(x => { const o = [...(x.options || [])]; o[i] = v; return { ...x, options: o }; });
+      const addOpt = () => setF(x => ({ ...x, options: [...(x.options || []), '',] }));
+      const rmOpt = (i) => setF(x => {
+        const o = x.options.filter((_, j) => j !== i);
+        let c = x.correct;
+        if (x.type === 'mcq') { if (c === i) c = null; else if (typeof c === 'number' && c > i) c--; }
+        if (x.type === 'msq') { c = Array.isArray(c) ? c.filter(n => n !== i).map(n => n > i ? n - 1 : n) : []; }
+        return { ...x, options: o, correct: c };
+      });
+      const togCor = (i) => {
+        if (f.type === 'mcq') { s('correct')(f.correct === i ? null : i); }
+        else if (f.type === 'msq') {
+          const cur = Array.isArray(f.correct) ? f.correct : [];
+          s('correct')(cur.includes(i) ? cur.filter(x => x !== i) : [...cur, i]);
+        }
+      };
+      const isCor = (i) => f.type === 'mcq' ? f.correct === i : (Array.isArray(f.correct) && f.correct.includes(i));
+
+      const insertSym = (sym, ref) => {
+        const el = ref?.current;
+        const insert = '$' + sym + '$';
+        if (el) {
+          el.focus(); const ss = el.selectionStart, se = el.selectionEnd;
+          const v = el.value.slice(0, ss) + insert + el.value.slice(se);
+          if (ref === tRef) s('text')(v); else s('explanation')(v);
+          setTimeout(() => el.setSelectionRange(ss + insert.length, ss + insert.length), 0);
+        } else {
+          if (ref === tRef) s('text')(t => (t || '') + insert); else s('explanation')(e => (e || '') + insert);
+        }
+      };
+
+      const aiGenExpl = async () => {
+        if (!f.text.trim()) { notify('Enter question text first', 'w'); return; }
+        if (f.type !== 'numerical' && f.correct === null) { notify('Set the correct answer first', 'w'); return; }
+        setGen(true);
+        try {
+          const caT = f.type === 'numerical' ? f.correct : f.type === 'mcq' ? (f.correct !== null && f.options ? f.options[f.correct] : '') : (Array.isArray(f.correct) && f.options ? f.correct.map(i => f.options[i]).join(', ') : '');
+          const res = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{
+                role: 'user', content: `Generate a complete, detailed step-by-step solution for this competitive exam question (JEE/GATE level).
+
+Question: ${f.text}
+Type: ${f.type}
+${f.options?.length ? 'Options:\n' + f.options.map((o, i) => `(${String.fromCharCode(65 + i)}) ${o}`).join('\n') : ''}
+Correct Answer: ${caT}
+
+Include: all mathematical working, key formulas, why wrong options fail (for MCQ/MSQ), common mistakes.
+Use $...$ for inline math, $$...$$ for display equations. Use **bold** for emphasis.`}]
+            })
+          });
+          const data = await res.json();
+          s('explanation')(data.content?.[0]?.text || '');
+          notify('AI explanation generated!', 's');
+        } catch { notify('Failed to generate. Check API connection.', 'e'); }
+        finally { setGen(false); }
+      };
+
+      const save = () => {
+        if (!f.examId) { notify('Select an exam', 'e'); return; }
+        if (!f.sectionId) { notify('Select a section', 'e'); return; }
+        if (!f.text.trim()) { notify('Question text required', 'e'); return; }
+        if (f.type !== 'numerical') {
+          if ((f.options || []).some(o => !o.trim())) { notify('Fill all option fields', 'e'); return; }
+          if (f.correct === null || f.correct === undefined || (Array.isArray(f.correct) && !f.correct.length)) { notify('Mark the correct answer', 'e'); return; }
+        } else {
+          if (f.correct === null || f.correct === '' || f.correct === undefined) { notify('Enter correct numerical answer', 'e'); return; }
+        }
+        onSave({ ...f, id: editQ?.id || uid() });
+      };
+
+      return (
+        <div className="qe-grid">
+          {/* Left — editor */}
+          <div className="qe-left">
+            {/* Details */}
+            <div className="card">
+              <div className="chd">Question Details</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div className="fl" style={{ marginBottom: 0 }}>
+                  <label className="flbl">Exam *</label>
+                  <select className="fc" value={f.examId} onChange={e => { s('examId')(e.target.value); const ex = exams.find(x => x.id === e.target.value); s('sectionId')((ex?.sections || [])[0]?.id || ''); }}>
+                    <option value="">Select exam</option>
+                    {exams.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
+                  </select>
+                </div>
+                <div className="fl" style={{ marginBottom: 0 }}>
+                  <label className="flbl">Section *</label>
+                  <select className="fc" value={f.sectionId} onChange={e => s('sectionId')(e.target.value)}>
+                    {sections.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div className="fl" style={{ marginBottom: 0 }}>
+                  <label className="flbl">Type</label>
+                  <select className="fc" value={f.type} onChange={e => setF(x => ({ ...x, type: e.target.value, correct: e.target.value === 'msq' ? [] : (e.target.value === 'numerical' ? null : null) }))}>
+                    <option value="mcq">MCQ — Single Correct</option>
+                    <option value="msq">MSQ — Multiple Correct</option>
+                    <option value="numerical">Numerical Answer</option>
+                  </select>
+                </div>
+                <div className="fl" style={{ marginBottom: 0 }}>
+                  <label className="flbl">Difficulty</label>
+                  <select className="fc" value={f.difficulty} onChange={e => s('difficulty')(e.target.value)}>
+                    <option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <label className="flbl">Q. Number</label>
+                <input type="number" className="fc" style={{ width: 75 }} value={f.num} onChange={e => s('num')(parseInt(e.target.value) || 1)} min={1} />
+              </div>
+            </div>
+
+            {/* Question text */}
+            <div className="card">
+              <div className="chd">Question Text <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text3)' }}>LaTeX: $inline$ or $$display$$</span></div>
+              <div className="mh">
+                {SYMS.map(([sym, lbl]) => (
+                  <button key={sym} className="ms" title={'Insert: ' + sym} onClick={() => {
+                    const el = tRef.current; const ins = '$' + sym + '$';
+                    if (el) { el.focus(); const ss = el.selectionStart; const v = el.value.slice(0, ss) + ins + el.value.slice(el.selectionEnd); s('text')(v); setTimeout(() => el.setSelectionRange(ss + ins.length, ss + ins.length), 0); }
+                    else s('text')(t => (t || '') + ins);
+                  }}>{lbl}</button>
+                ))}
+              </div>
+              <textarea ref={tRef} className="fc" rows={4} value={f.text} onChange={e => s('text')(e.target.value)} placeholder="Enter question. Use $...$ for inline math, $$...$$ for display math." />
+            </div>
+
+            {/* Options / Answer */}
+            {f.type !== 'numerical' ? (
+              <div className="card">
+                <div className="chd">Options <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text3)' }}>— click ✓ to mark correct{f.type === 'msq' ? ' (multiple allowed)' : ''}</span></div>
+                {(f.options || []).map((opt, i) => (
+                  <div key={i} className="oe-row">
+                    <div className="oe-key">{String.fromCharCode(65 + i)}</div>
+                    <input className="fc" style={{ flex: 1 }} value={opt} onChange={e => setOpt(i, e.target.value)} placeholder={`Option ${String.fromCharCode(65 + i)} — supports $LaTeX$`} />
+                    <div className={`ctog ${isCor(i) ? 'ck' : ''}`} onClick={() => togCor(i)} title="Mark as correct">
+                      {isCor(i) && '✓'}
+                    </div>
+                    {(f.options || []).length > 2 && <button style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: '0 4px', fontSize: 15 }} onClick={() => rmOpt(i)}>✕</button>}
+                  </div>
+                ))}
+                <div className="flex ia g2 mt2">
+                  <button className="btn btn-gray btn-sm" onClick={addOpt}>+ Add Option</button>
+                  <span style={{ fontSize: 11, color: 'var(--text3)' }}>Green ✓ = correct answer</span>
+                </div>
+              </div>
+            ) : (
+              <div className="card">
+                <div className="chd">Correct Numerical Answer</div>
+                <input type="number" step="any" className="fc" style={{ width: 220 }} value={f.correct ?? ''} onChange={e => s('correct')(e.target.value === '' ? null : parseFloat(e.target.value))} placeholder="e.g. 4 or 3.14" />
+                <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 5 }}>Answer accepted with ±0.5% tolerance for floating-point errors.</div>
+              </div>
+            )}
+
+            {/* Explanation */}
+            <div className="card">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11 }}>
+                <div className="chd" style={{ margin: 0 }}>Explanation / Solution <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text3)' }}>— LaTeX supported</span></div>
+                <button className="btn btn-outline btn-sm" onClick={aiGenExpl} disabled={gen}>{gen ? 'Generating…' : '🤖 AI Generate'}</button>
+              </div>
+              <div className="mh">
+                {SYMS.slice(0, 12).map(([sym, lbl]) => (
+                  <button key={sym} className="ms" onClick={() => {
+                    const el = eRef.current; const ins = '$' + sym + '$';
+                    if (el) { el.focus(); const ss = el.selectionStart; const v = el.value.slice(0, ss) + ins + el.value.slice(el.selectionEnd); s('explanation')(v); setTimeout(() => el.setSelectionRange(ss + ins.length, ss + ins.length), 0); }
+                    else s('explanation')(e => (e || '') + ins);
+                  }}>{lbl}</button>
+                ))}
+              </div>
+              <textarea ref={eRef} className="fc" rows={7} value={f.explanation || ''} onChange={e => s('explanation')(e.target.value)} placeholder="Step-by-step solution. **bold**, $inline$, $$display$$, \n for newline." />
+              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 5 }}>**text** → bold &nbsp;|&nbsp; $formula$ → inline math &nbsp;|&nbsp; $$formula$$ → display math &nbsp;|&nbsp; \n → newline</div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', paddingBottom: 20 }}>
+              <button className="btn btn-gray" onClick={onCancel}>Cancel</button>
+              <button className="btn btn-blue" onClick={save}>{editQ ? 'Update Question' : 'Save Question'}</button>
+            </div>
+          </div>
+
+          {/* Right — preview */}
+          <div className="qe-right">
+            <div className="prev-lbl">Live Preview</div>
+            <div className="qcard" style={{ boxShadow: 'none', border: '1px solid #e5e7eb' }}>
+              <div className="qmeta">
+                <div className="flex ia g2">
+                  <span style={{ fontSize: 12, color: 'var(--text2)', fontWeight: 600 }}>Q{f.num}</span>
+                  <span className={`qtype qtype-${f.type}`}>{f.type === 'mcq' ? 'MCQ' : f.type === 'msq' ? 'MSQ' : 'Numerical'}</span>
+                  {f.difficulty && <span className="badge bg-gray" style={{ textTransform: 'capitalize' }}>{f.difficulty}</span>}
+                </div>
+              </div>
+              <div className="qbody" style={{ minHeight: 36 }}>
+                {f.text ? <MT text={f.text} /> : <span style={{ color: 'var(--text3)', fontStyle: 'italic' }}>Question text appears here…</span>}
+              </div>
+              {f.type !== 'numerical' && (f.options || []).map((opt, i) => (
+                <div key={i} className={`opt ${isCor(i) ? f.type === 'msq' ? 'sel-m' : 'sel' : ''}`} style={{ cursor: 'default', marginBottom: 6 }}>
+                  {f.type === 'mcq' ? <div className="opt-rd" style={{ borderColor: isCor(i) ? 'var(--blue)' : '#d1d5db', background: isCor(i) ? 'var(--blue)' : 'transparent' }}>{isCor(i) && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}</div>
+                    : <div className="opt-cb" style={{ borderColor: isCor(i) ? '#7c3aed' : '#d1d5db', background: isCor(i) ? '#7c3aed' : 'transparent' }}>{isCor(i) && <span style={{ color: '#fff', fontSize: 11 }}>✓</span>}</div>}
+                  <span className="opt-k">{String.fromCharCode(65 + i)}.</span>
+                  <span className="opt-lbl">{opt ? <MT text={opt} /> : <span style={{ color: 'var(--text3)', fontStyle: 'italic' }}>Option {String.fromCharCode(65 + i)}</span>}</span>
+                  {isCor(i) && <span style={{ fontSize: 10, color: 'var(--green)', fontWeight: 700, marginLeft: 'auto', whiteSpace: 'nowrap' }}>✓ Correct</span>}
+                </div>
+              ))}
+              {f.type === 'numerical' && (
+                <div style={{ marginTop: 8, padding: '9px 11px', background: '#f9fafb', borderRadius: 'var(--radius)', border: '1px solid var(--gray-bd)' }}>
+                  <span style={{ fontSize: 12, color: 'var(--text2)' }}>Correct Answer: </span>
+                  <strong className="tg">{f.correct ?? '—'}</strong>
+                </div>
+              )}
+              {f.explanation && (
+                <div style={{ marginTop: 13, padding: '11px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 'var(--radius)' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 7 }}>📖 Solution</div>
+                  <div style={{ fontSize: 13, lineHeight: 1.9 }}><MT text={f.explanation} /></div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ══════ ADMIN QUESTION BANK ════════════════════════════════════════════ */
+    function AdminQuestions({ defExam }) {
+      const [qs, setQs] = useState(DB.get('questions', []));
+      const exams = DB.get('exams', []);
+      const [fEx, setFEx] = useState(defExam || exams[0]?.id || '');
+      const [fSec, setFSec] = useState('');
+      const [fType, setFType] = useState('');
+      const [showEd, setShowEd] = useState(false);
+      const [editQ, setEditQ] = useState(null);
+      const notify = useN();
+      const rf = () => setQs(DB.get('questions', []));
+      const curExam = exams.find(e => e.id === fEx);
+      const secs = curExam?.sections || [];
+      const filtered = qs.filter(q => {
+        if (fEx && q.examId !== fEx) return false;
+        if (fSec && q.sectionId !== fSec) return false;
+        if (fType && q.type !== fType) return false;
+        return true;
+      });
+
+      const handleSave = (q) => {
+        const all = DB.get('questions', []);
+        DB.set('questions', editQ ? all.map(x => x.id === editQ.id ? q : x) : [...all, q]);
+        rf(); setShowEd(false); notify(editQ ? 'Question updated!' : 'Question saved!', 's');
+      };
+      const del = (id) => { if (!confirm('Delete this question?')) return; DB.set('questions', DB.get('questions', []).filter(q => q.id !== id)); rf(); notify('Deleted', 's'); };
+
+      if (showEd) return (
+        <div className="main"><div className="mi">
+          <div className="phd">
+            <div><div className="ptitle">{editQ ? 'Edit Question' : 'New Question'}</div><div className="psub">Supports full LaTeX math rendering</div></div>
+            <button className="btn btn-gray" onClick={() => setShowEd(false)}>← Back to Bank</button>
+          </div>
+          <QuestionEditor examId={fEx} editQ={editQ} onSave={handleSave} onCancel={() => setShowEd(false)} />
+        </div></div>
+      );
+
+      const dc = { easy: 'var(--green)', medium: 'var(--amber)', hard: 'var(--red)' };
+      return (
+        <div className="main"><div className="mi">
+          <div className="phd">
+            <div><div className="ptitle">Question Bank</div><div className="psub">{filtered.length} question{filtered.length !== 1 ? 's' : ''}</div></div>
+            <button className="btn btn-blue" onClick={() => { setEditQ(null); setShowEd(true); }}>+ New Question</button>
+          </div>
+          <div className="flex g2 mb3" style={{ flexWrap: 'wrap' }}>
+            <select className="fc" style={{ width: 'auto' }} value={fEx} onChange={e => { setFEx(e.target.value); setFSec(''); }}>
+              <option value="">All Exams</option>{exams.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
+            </select>
+            <select className="fc" style={{ width: 'auto' }} value={fSec} onChange={e => setFSec(e.target.value)}>
+              <option value="">All Sections</option>{secs.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+            <select className="fc" style={{ width: 'auto' }} value={fType} onChange={e => setFType(e.target.value)}>
+              <option value="">All Types</option><option value="mcq">MCQ</option><option value="msq">MSQ</option><option value="numerical">Numerical</option>
+            </select>
+          </div>
+          {filtered.length === 0 ? (
+            <div className="empty"><div style={{ fontSize: 36, marginBottom: 10 }}>❓</div><div style={{ fontWeight: 600 }}>No questions found</div><div className="tsm td mt2">Create your first question</div><button className="btn btn-blue mt3" onClick={() => { setEditQ(null); setShowEd(true); }}>+ New Question</button></div>
+          ) : (
+            filtered.map((q, idx) => {
+              const secQ = exams.find(e => e.id === q.examId)?.sections?.find(s => s.id === q.sectionId);
+              const corArr = Array.isArray(q.correct) ? q.correct : [q.correct];
+              return (
+                <div key={q.id} className="card" style={{ marginBottom: 9, padding: '13px 15px' }}>
+                  <div className="flex ia jb" style={{ flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                    <div className="flex ia g2" style={{ flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 700, fontSize: 12, color: 'var(--text2)' }}>Q{q.num || idx + 1}</span>
+                      <span className={`qtype qtype-${q.type}`}>{q.type.toUpperCase()}</span>
+                      {secQ && <span style={{ fontSize: 11, color: secQ.color, border: `1px solid ${secQ.color}40`, padding: '1px 7px', borderRadius: 9999, background: secQ.bgColor || '#f9fafb' }}>{secQ.name}</span>}
+                      {q.difficulty && <span style={{ fontSize: 11, color: dc[q.difficulty], fontWeight: 600, textTransform: 'capitalize' }}>{q.difficulty}</span>}
+                    </div>
+                    <div className="flex g2">
+                      <button className="btn btn-outline btn-sm" onClick={() => { setEditQ(q); setShowEd(true); }}>Edit</button>
+                      <button className="btn btn-sm" style={{ background: 'var(--red-lt)', color: 'var(--red)', border: '1px solid #fca5a5' }} onClick={() => del(q.id)}>Delete</button>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 13, lineHeight: 1.75 }}><MT text={(q.text || '').slice(0, 220) + ((q.text || '').length > 220 ? '…' : '')} /></div>
+                  {q.type !== 'numerical' && q.options && (
+                    <div className="flex g2 mt2" style={{ flexWrap: 'wrap' }}>
+                      {q.options.map((o, i) => {
+                        const isC = corArr.map(Number).includes(i);
+                        return (<span key={i} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 3, background: isC ? 'var(--green-lt)' : '#f9fafb', border: `1px solid ${isC ? '#6ee7b7' : 'var(--gray-bd)'}`, color: isC ? 'var(--green)' : 'var(--text2)', fontWeight: isC ? 700 : 400 }}>
+                          {String.fromCharCode(65 + i)}{isC ? ' ✓' : ''}
+                        </span>);
+                      })}
+                    </div>
+                  )}
+                  {q.type === 'numerical' && <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 6 }}>Answer: <strong className="tg">{q.correct}</strong></div>}
+                </div>
+              );
+            })
+          )}
+        </div></div>
+      );
+    }
+
+    /* ══════ ADMIN STUDENTS ═════════════════════════════════════════════════ */
+    function AdminStudents() {
+      const users = DB.get('users', []).filter(u => u.role === 'student');
+      const atts = DB.get('attempts', []);
+      return (
+        <div className="main"><div className="mi">
+          <div className="phd"><div className="ptitle">Students</div></div>
+          <div className="tw">
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Exams Taken</th><th>Avg Score</th><th>Violations</th></tr></thead>
+              <tbody>
+                {users.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', padding: 36, color: 'var(--text3)' }}>No students registered yet</td></tr>}
+                {users.map(u => {
+                  const ua = atts.filter(a => a.userId === u.id);
+                  const avg = ua.length ? Math.round(ua.reduce((s, a) => s + (a.results?.score || 0), 0) / ua.length) : '—';
+                  const viols = ua.reduce((s, a) => s + (a.tabWarnings || 0), 0);
+                  return (<tr key={u.id}>
+                    <td>
+                      <div className="flex ia g2">
+                        <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 11, flexShrink: 0 }}>{u.name.charAt(0).toUpperCase()}</div>
+                        <span style={{ fontWeight: 600 }}>{u.name}</span>
+                      </div>
+                    </td>
+                    <td className="tsm tm">{u.email}</td>
+                    <td className="tsm td">{u.joinDate}</td>
+                    <td className="tb f7">{ua.length}</td>
+                    <td className="tg f6">{avg}</td>
+                    <td>{viols > 0 ? <span className="badge bg-red">{viols}</span> : '—'}</td>
+                  </tr>);
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div></div>
+      );
+    }
+
+    /* ══════ ADMIN RESULTS ══════════════════════════════════════════════════ */
+    function AdminResults() {
+      const atts = DB.get('attempts', []);
+      const exams = DB.get('exams', []);
+      const users = DB.get('users', []);
+      const fmt = s => { const m = Math.floor(s / 60), ss = s % 60; return `${m}m ${ss}s`; };
+      return (
+        <div className="main"><div className="mi">
+          <div className="phd"><div className="ptitle">All Results</div></div>
+          {atts.length === 0 ? <div className="empty"><div style={{ fontSize: 36, marginBottom: 10 }}>📊</div><div style={{ fontWeight: 600 }}>No results yet</div></div> : (
+            <div className="tw">
+              <table>
+                <thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Accuracy</th><th>Time</th><th>Tab Viols</th><th>Submitted</th><th>Reason</th></tr></thead>
+                <tbody>{[...atts].reverse().map(a => {
+                  const ex = exams.find(e => e.id === a.examId);
+                  const u = users.find(x => x.id === a.userId);
+                  const ac = Math.round((a.results?.correct || 0) / (a.results?.total || 1) * 100);
+                  return (<tr key={a.id}>
+                    <td style={{ fontWeight: 600 }}>{u?.name || 'Unknown'}</td>
+                    <td className="tsm tm">{ex?.title?.slice(0, 28) || '—'}</td>
+                    <td className="tb f7">{a.results?.score || 0}</td>
+                    <td className="tg f6">{a.results?.correct || 0}</td>
+                    <td className="tr f6">{a.results?.wrong || 0}</td>
+                    <td><span style={{ color: ac > 70 ? 'var(--green)' : ac > 40 ? 'var(--amber)' : 'var(--red)', fontWeight: 600 }}>{ac}%</span></td>
+                    <td className="tsm tm">{fmt(a.totalTime || 0)}</td>
+                    <td>{(a.tabWarnings || 0) > 0 ? <span className="badge bg-red">{a.tabWarnings}</span> : '—'}</td>
+                    <td className="tsm td">{new Date(a.date).toLocaleDateString('en-IN')}</td>
+                    <td>{a.reason === 'fullscreen_exit' ? <span className="badge bg-red">FS Exit</span> : a.reason === 'timer' ? <span className="badge bg-amber">Timeout</span> : <span className="badge bg-green">Manual</span>}</td>
+                  </tr>);
+                })}</tbody>
+              </table>
+            </div>
+          )}
+        </div></div>
+      );
+    }
+
+    /* ══════ STUDENT RESULTS ════════════════════════════════════════════════ */
+    function StudentResults({ user, onResult }) {
+      const atts = DB.get('attempts', []).filter(a => a.userId === user.id);
+      const exams = DB.get('exams', []);
+      return (
+        <div className="main"><div className="mi">
+          <div className="phd"><div className="ptitle">My Results</div></div>
+          {atts.length === 0 ? <div className="empty"><div style={{ fontSize: 36, marginBottom: 10 }}>📊</div><div style={{ fontWeight: 600 }}>No results yet</div><div className="tsm td mt2">Attempt an exam to see your results here</div></div> : (
+            <div className="tw">
+              <table>
+                <thead><tr><th>Exam</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Accuracy</th><th>Date</th><th></th></tr></thead>
+                <tbody>{[...atts].reverse().map(a => {
+                  const ex = exams.find(e => e.id === a.examId);
+                  const ac = Math.round((a.results?.correct || 0) / (a.results?.total || 1) * 100);
+                  return (<tr key={a.id}>
+                    <td style={{ fontWeight: 600 }}>{ex?.title || '—'}</td>
+                    <td className="tb f7">{a.results?.score || 0}</td>
+                    <td className="tg f6">{a.results?.correct || 0}</td>
+                    <td className="tr f6">{a.results?.wrong || 0}</td>
+                    <td><span style={{ color: ac > 70 ? 'var(--green)' : ac > 40 ? 'var(--amber)' : 'var(--red)', fontWeight: 600 }}>{ac}%</span></td>
+                    <td className="tsm td">{new Date(a.date).toLocaleDateString('en-IN')}</td>
+                    <td><button className="btn btn-outline btn-sm" onClick={() => onResult(a)}>Review</button></td>
+                  </tr>);
+                })}</tbody>
+              </table>
+            </div>
+          )}
+        </div></div>
+      );
+    }
+
+    /* ══════ ROOT APP ════════════════════════════════════════════════════════ */
+    function App() {
+      const [view, setView] = useState('auth');
+      const [user, setUser] = useState(null);
+      const [nav, setNav] = useState('dashboard');
+      const [pendingExam, setPendingExam] = useState(null);// waiting for modal
+      const [fsExam, setFsExam] = useState(null);         // waiting for fullscreen
+      const [activeExam, setActiveExam] = useState(null);
+      const [activeResult, setActiveResult] = useState(null);
+      const [qbExam, setQbExam] = useState(null);
+      const notify = useN();
+
+      const login = (u) => { setUser(u); setNav('dashboard'); setView('dashboard'); };
+      const logout = () => {
+        try { if (document.fullscreenElement) document.exitFullscreen(); } catch { }
+        setUser(null); setView('auth'); setActiveExam(null); setFsExam(null); setPendingExam(null);
+      };
+
+      /* Role guard */
+      const guardedNav = (id) => {
+        if (user?.role === 'student' && ['exams_manage', 'questions', 'students', 'results_admin'].includes(id)) {
+          notify('Access denied. Admin only.', 'e'); return;
+        }
+        setNav(id);
+      };
+
+      const startExam = (exam) => {
+        const qc = DB.get('questions', []).filter(q => q.examId === exam.id).length;
+        if (qc === 0) { notify('This exam has no questions yet.', 'e'); return; }
+        setPendingExam(exam);
+      };
+      const confirmExam = () => { setFsExam(pendingExam); setPendingExam(null); };
+      const enterFs = () => { setActiveExam(fsExam); setFsExam(null); setView('exam'); };
+      const submitExam = (att) => { setActiveResult(att); setActiveExam(null); setView('result'); };
+      const viewResult = (att) => { setActiveResult(att); setView('result'); };
+
+      if (view === 'auth') return <AuthPage onLogin={login} />;
+
+      if (view === 'exam' && activeExam) return (
+        <NotifProvider>
+          <ExamInterface exam={activeExam} user={user} onSubmit={submitExam} onFsCancel={() => { setActiveExam(null); setView('dashboard'); try { if (document.fullscreenElement) document.exitFullscreen(); } catch { } }} />
+        </NotifProvider>
+      );
+
+      /* Fullscreen gate screen */
+      if (fsExam) return (
+        <FsGate onEnter={enterFs} onBack={() => { setFsExam(null); setPendingExam(null); }} />
+      );
+
+      const topbarTitle = () => {
+        if (user?.role === 'admin') return 'Admin Portal';
+        const titles = { dashboard: 'Dashboard', exams: 'Available Exams', results: 'My Results' };
+        return titles[nav] || 'Student Portal';
+      };
+
+      const renderMain = () => {
+        /* STRICT ROLE CHECK: students only see student pages */
+        if (user?.role === 'student') {
+          if (nav === 'dashboard' || nav === 'exams') return <StudentDashboard user={user} onStart={startExam} onResult={viewResult} />;
+          if (nav === 'results') return <StudentResults user={user} onResult={viewResult} />;
+          return <StudentDashboard user={user} onStart={startExam} onResult={viewResult} />;
+        }
+        if (user?.role === 'admin') {
+          if (nav === 'dashboard') return <AdminDash />;
+          if (nav === 'exams') return <AdminExams onGotoQ={(id) => { setQbExam(id); setNav('questions'); }} />;
+          if (nav === 'questions') return <AdminQuestions defExam={qbExam} />;
+          if (nav === 'students') return <AdminStudents />;
+          if (nav === 'results') return <AdminResults />;
+        }
+        return null;
+      };
+
+      if (view === 'result' && activeResult) {
+        const exam = DB.get('exams', []).find(e => e.id === activeResult.examId);
+        return (
+          <div className="layout">
+            <div className="topbar">
+              <div className="tbar-logo">Chhatro Bondhu Exam Portal<small>ছাত্র বন্ধু পরীক্ষা পোর্টাল</small></div>
+              <div className="tbar-r">
+                <div className="tbar-user">
+                  <div className="tbar-av">{user?.name?.charAt(0).toUpperCase()}</div>
+                  <span>{user?.name}</span>
+                </div>
+              </div>
+            </div>
+            <Sidebar user={user} active={nav} setActive={guardedNav} onLogout={logout} />
+            {exam && <ResultPage attempt={activeResult} exam={exam} onBack={() => setView('dashboard')} />}
+          </div>
+        );
+      }
+
+      return (
+        <div className="layout">
+          <div className="topbar">
+            <div className="tbar-logo">Chhatro Bondhu Exam Portal<small>ছাত্র বন্ধু পরীক্ষা পোর্টাল</small></div>
+            <div className="tbar-sep" />
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,.7)' }}>{topbarTitle()}</span>
+            <div className="tbar-r">
+              <div className="tbar-user">
+                <div className="tbar-av">{user?.name?.charAt(0).toUpperCase()}</div>
+                <span>{user?.name}</span>
+                <span className="badge bg-blue" style={{ textTransform: 'capitalize' }}>{user?.role}</span>
+              </div>
+              <button className="tbar-btn" onClick={logout}>Sign Out</button>
+            </div>
+          </div>
+          <Sidebar user={user} active={nav} setActive={guardedNav} onLogout={logout} />
+          {renderMain()}
+
+          {/* Exam Start Modal */}
+          {pendingExam && <ExamStartModal exam={pendingExam} onConfirm={confirmExam} onCancel={() => setPendingExam(null)} />}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      <NotifProvider><App /></NotifProvider>
+    );
+  </script>
+</body>
+
+</html>
