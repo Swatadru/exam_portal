@@ -88,7 +88,7 @@
 ## 📂 Project Structure
 
 ```
-chhatro-bondhu-exam-portal/
+exam-portal/
 │
 ├── index.html
 ├── (Embedded CSS & JS)
