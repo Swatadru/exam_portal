@@ -100,10 +100,10 @@ chhatro-bondhu-exam-portal/
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/chhatro-bondhu-exam-portal.git
+git clone https://github.com/your-username/exam-portal.git
 
 # Navigate to project folder
-cd chhatro-bondhu-exam-portal
+cd exam-portal
 
 # Run the project
 Open index.html in your browser
