@@ -508,81 +508,151 @@
     .auth-page {
       height: 100%;
       overflow: auto;
-      background: linear-gradient(145deg, #0d3d6e 0%, #1B4F8A 45%, #1a6fbd 100%);
+      background-color: #cbd5e1;
+      background-image: 
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.4) 0px, rgba(255,255,255,0.4) 1px, transparent 1px, transparent 18px),
+        repeating-linear-gradient(-45deg, rgba(255,255,255,0.4) 0px, rgba(255,255,255,0.4) 1px, transparent 1px, transparent 18px),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2) 0%, transparent 80%);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px
+      padding: 20px;
     }
 
     .auth-box {
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, .3);
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15), inset 0 1px 0 rgba(255, 255, 255, 1);
+      border: 1px solid rgba(255, 255, 255, 0.5);
       width: 100%;
-      max-width: 400px
+      max-width: 420px;
+      overflow: hidden;
     }
 
     .auth-hd {
-      background: var(--blue);
-      padding: 22px;
+      background: #ffffff;
+      padding: 40px 32px 16px;
       text-align: center;
-      color: #fff;
-      border-radius: 8px 8px 0 0
+      color: #0f172a;
     }
 
     .auth-logo {
-      font-size: 20px;
-      font-weight: 700;
-      line-height: 1.3
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+      color: #0f172a;
     }
 
     .auth-logo-sub {
-      font-size: 11px;
-      opacity: .75;
-      margin-top: 3px;
-      letter-spacing: .3px
+      font-size: 13px;
+      color: #64748b;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 600;
     }
 
     .auth-bd {
-      padding: 26px
+      padding: 32px;
+      background: #ffffff;
     }
 
     .auth-tabs {
       display: flex;
-      border-bottom: 2px solid #e5e7eb;
-      margin-bottom: 18px
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      padding: 5px;
+      border-radius: 10px;
+      margin-bottom: 24px;
     }
 
     .auth-tab {
       flex: 1;
-      padding: 8px;
+      padding: 10px;
       text-align: center;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
-      color: var(--text3);
+      color: #64748b;
       cursor: pointer;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      transition: all .15s
+      border-radius: 8px;
+      transition: all .2s;
+    }
+    
+    .auth-tab:hover:not(.on) {
+      color: #334155;
+      background: rgba(15, 23, 42, 0.04);
     }
 
     .auth-tab.on {
-      color: var(--blue);
-      border-bottom-color: var(--blue)
+      color: #0f172a;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     }
 
     .auth-err {
-      background: var(--red-lt);
-      border: 1px solid #fca5a5;
-      border-radius: var(--radius);
-      padding: 9px 12px;
-      font-size: 12px;
-      color: var(--red);
-      margin-bottom: 12px
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      border-left: 4px solid #e11d48;
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #be123c;
+      margin-bottom: 20px;
     }
 
-    /* ────────────────────────── MAIN LAYOUT */
+    .auth-bd .fl {
+      margin-bottom: 20px;
+    }
+
+    .auth-bd .flbl {
+      font-size: 13px;
+      color: #475569;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .auth-bd .fc {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 12px 16px;
+      transition: all 0.2s;
+      font-size: 15px;
+      color: #0f172a;
+    }
+
+    .auth-bd .fc:focus {
+      background: #ffffff;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      outline: none;
+    }
+    
+    .auth-bd .fc::placeholder {
+      color: #94a3b8;
+    }
+
+    .auth-bd .w-full {
+      padding: 14px;
+      font-size: 15px;
+      border-radius: 8px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      margin-top: 8px;
+      background: #0f172a;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+      transition: all 0.2s;
+      border: none;
+      color: #ffffff;
+    }
+
+    .auth-bd .w-full:hover {
+      background: #1e293b;
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
+      transform: translateY(-1px);
+    }
     .layout {
       display: grid;
       grid-template-columns: 210px 1fr;
@@ -1803,10 +1873,14 @@
 
     /* Default seed — admin only, no demo for students */
     (() => {
+      // Ensure admin exists even if already inited
+      const users = DB.get('users', []);
+      if (!users.some(u => u.role === 'admin' && u.email === 'atanu@gmail.com')) {
+        users.push({ id: 'adm1', name: 'Atanu Dutta', email: 'atanu@gmail.com', password: 'Atanu@123', role: 'admin', joinDate: '2025-01-01' });
+        DB.set('users', users);
+      }
+
       if (!DB.get('inited')) {
-        DB.set('users', [
-          { id: 'adm1', name: 'Atanu Dutta', email: 'atanu@gmail.com', password: 'Atanu@123', role: 'admin', joinDate: '2025-01-01' }
-        ]);
         DB.set('exams', [
           {
             id: 'e1', title: 'JEE Main Mock 2025', description: 'Full syllabus mock covering Physics, Chemistry & Mathematics. Strictly follows NTA JEE Main pattern.',
@@ -1904,23 +1978,38 @@
       const s = k => e => setF(x => ({ ...x, [k]: e.target.value }));
 
       const login = () => {
+        /* Capture values SYNCHRONOUSLY before any setState calls to avoid stale closure inside setTimeout */
+        const emailVal = (f.email || '').trim().toLowerCase();
+        const passVal = (f.password || '');
+        if (!emailVal || !passVal) { setErr('Please enter your email and password.'); return; }
         setErr(''); setBusy(true);
         setTimeout(() => {
-          const u = DB.get('users', []).find(x => x.email.toLowerCase() === f.email.toLowerCase() && x.password === f.password);
-          if (u) { notify('Welcome, ' + u.name + '!', 's'); onLogin(u); }
-          else setErr('Invalid email or password. Please try again.');
+          const allUsers = DB.get('users', []);
+          const u = allUsers.find(x => (x.email || '').trim().toLowerCase() === emailVal && (x.password || '') === passVal);
+          if (u) {
+            notify('Welcome back, ' + u.name + '!', 's'); onLogin(u);
+          } else {
+            setErr('Invalid email or password. Please try again.');
+          }
           setBusy(false);
-        }, 450);
+        }, 350);
       };
 
       const register = () => {
         setErr('');
-        if (!f.name.trim() || !f.email.trim() || !f.password.trim()) { setErr('All fields are required.'); return; }
-        if (f.password.length < 6) { setErr('Password must be at least 6 characters.'); return; }
+        const nameVal = f.name.trim();
+        const emailVal = f.email.trim().toLowerCase();
+        const passVal = f.password;
+        if (!nameVal || !emailVal || !passVal.trim()) { setErr('All fields are required.'); return; }
+        if (passVal.length < 6) { setErr('Password must be at least 6 characters.'); return; }
         const users = DB.get('users', []);
-        if (users.find(u => u.email.toLowerCase() === f.email.toLowerCase())) { setErr('This email is already registered.'); return; }
-        const nu = { id: uid(), name: f.name.trim(), email: f.email.trim().toLowerCase(), password: f.password, role: 'student', joinDate: new Date().toISOString().slice(0, 10) };
-        DB.set('users', [...users, nu]);
+        if (users.find(u => (u.email || '').toLowerCase() === emailVal)) { setErr('This email is already registered.'); return; }
+        const nu = { id: uid(), name: nameVal, email: emailVal, password: passVal, role: 'student', joinDate: new Date().toISOString().slice(0, 10) };
+        const updatedUsers = [...users, nu];
+        DB.set('users', updatedUsers);
+        /* Verify save worked */
+        const saved = DB.get('users', []);
+        if (!saved.find(u => u.email === emailVal)) { setErr('Registration failed — storage error. Please try again.'); return; }
         notify('Account created! Welcome, ' + nu.name, 's');
         onLogin(nu);
       };
@@ -1959,15 +2048,15 @@
                 {busy ? 'Please wait…' : tab === 'login' ? 'Sign In →' : 'Create Account →'}
               </button>
               {tab === 'login' && (
-                <div style={{ marginTop: 14, padding: 11, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 'var(--radius)', fontSize:12,color: 'var(--text2)',lineHeight:1.6}}>
-              <strong>Admin login:</strong> Contact your administrator for credentials.<br />
-              <strong>Students:</strong> Register above to create your account.
+                <div style={{ marginTop: 14, padding: 11, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12, color: '#4b5563', lineHeight: 1.6 }}>
+                  <strong>Admin login:</strong> Contact your administrator for credentials.<br />
+                  <strong>Students:</strong> Register above to create your account.
+                </div>
+              )}
             </div>
-          )}
           </div>
         </div>
-    </div >
-  );
+      );
     }
 
     /* ══════ SIDEBAR ════════════════════════════════════════════════════════ */
@@ -2644,12 +2733,26 @@
       const totalMarks = questions.length * (exam.markingScheme?.mcq?.correct || 4);
       const accuracy = Math.round((results.correct / (results.total || 1)) * 100);
 
-      const mockRank = useMemo(() => {
-        const d = Array.from({ length: 500 }, () => Math.floor(Math.random() * totalMarks));
-        d.push(results.score); d.sort((a, b) => b - a);
-        const r = d.indexOf(results.score) + 1;
-        return { rank: r, percentile: Math.round((1 - r / d.length) * 100), of: d.length };
-      }, [results.score, totalMarks]);
+      /* Real rank computed from actual attempt data for this exam */
+      const realRank = useMemo(() => {
+        const examAttempts = DB.get('attempts', []).filter(a => a.examId === exam.id);
+        /* Use best score per student */
+        const bestPerStudent = {};
+        examAttempts.forEach(a => {
+          const sc = a.results?.score || 0;
+          if (bestPerStudent[a.userId] === undefined || bestPerStudent[a.userId] < sc) {
+            bestPerStudent[a.userId] = sc;
+          }
+        });
+        const scores = Object.values(bestPerStudent).sort((a, b) => b - a);
+        const total = Math.max(scores.length, 1);
+        const myScore = results.score;
+        /* Rank = how many students scored strictly higher + 1 */
+        const rank = scores.filter(s => s > myScore).length + 1;
+        /* Percentile = % of students you scored better than */
+        const percentile = total > 1 ? Math.round(((total - rank) / (total - 1)) * 100) : 100;
+        return { rank, percentile, total };
+      }, [results.score, exam.id]);
 
       const getAI = async (q) => {
         if (aiEx[q.id] || aiLd[q.id]) return;
@@ -2701,7 +2804,7 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
                 <div className="s-ring"><div className="s-num">{results.score}</div><div className="s-tot">/{totalMarks}</div></div>
               </div>
               <div className="rmg" style={{ flex: 1, minWidth: 280 }}>
-                {[{ v: `${mockRank.percentile}th`, l: 'Percentile' }, { v: '#' + mockRank.rank, l: 'Simulated Rank' }, { v: accuracy + '%', l: 'Accuracy' }, { v: fmtT(attempt.totalTime || 0), l: 'Time Used' }, { v: results.correct, l: 'Correct' }, { v: results.wrong, l: 'Wrong' }].map(m => (
+                {[{ v: `${realRank.percentile}th`, l: `Percentile` }, { v: '#' + realRank.rank, l: `Rank (${realRank.total} appeared)` }, { v: accuracy + '%', l: 'Accuracy' }, { v: fmtT(attempt.totalTime || 0), l: 'Time Used' }, { v: results.correct, l: 'Correct' }, { v: results.wrong, l: 'Wrong' }].map(m => (
                   <div key={m.l} className="rmi"><div className="rmv">{m.v}</div><div className="rml">{m.l}</div></div>
                 ))}
               </div>
@@ -3374,16 +3477,39 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
 
     /* ══════ ADMIN STUDENTS ═════════════════════════════════════════════════ */
     function AdminStudents() {
-      const users = DB.get('users', []).filter(u => u.role === 'student');
-      const atts = DB.get('attempts', []);
+      const [users, setUsers] = useState(DB.get('users', []).filter(u => u.role === 'student'));
+      const [atts, setAtts] = useState(DB.get('attempts', []));
+      const [confirmDel, setConfirmDel] = useState(null);// {uid, name} to confirm
+      const notify = useN();
+
+      const rf = () => { setUsers(DB.get('users', []).filter(u => u.role === 'student')); setAtts(DB.get('attempts', [])); };
+
+      const clearStudentAttempts = (u) => {
+        const remaining = DB.get('attempts', []).filter(a => a.userId !== u.id);
+        DB.set('attempts', remaining);
+        rf();
+        setConfirmDel(null);
+        notify(`All test records for ${u.name} cleared.`, 's');
+      };
+
+      const deleteStudent = (u) => {
+        if (!window.confirm(`Delete student "${u.name}" and ALL their attempts? This cannot be undone.`)) return;
+        const allUsers = DB.get('users', []).filter(x => x.id !== u.id);
+        const remaining = DB.get('attempts', []).filter(a => a.userId !== u.id);
+        DB.set('users', allUsers);
+        DB.set('attempts', remaining);
+        rf();
+        notify(`Student ${u.name} deleted.`, 's');
+      };
+
       return (
         <div className="main"><div className="mi">
-          <div className="phd"><div className="ptitle">Students</div></div>
+          <div className="phd"><div className="ptitle">Students</div><div className="psub">{users.length} registered</div></div>
           <div className="tw">
             <table>
-              <thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Exams Taken</th><th>Avg Score</th><th>Violations</th></tr></thead>
+              <thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Exams Taken</th><th>Avg Score</th><th>Tab Violations</th><th>Actions</th></tr></thead>
               <tbody>
-                {users.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', padding: 36, color: 'var(--text3)' }}>No students registered yet</td></tr>}
+                {users.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', padding: 36, color: 'var(--text3)' }}>No students registered yet</td></tr>}
                 {users.map(u => {
                   const ua = atts.filter(a => a.userId === u.id);
                   const avg = ua.length ? Math.round(ua.reduce((s, a) => s + (a.results?.score || 0), 0) / ua.length) : '—';
@@ -3400,35 +3526,129 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
                     <td className="tb f7">{ua.length}</td>
                     <td className="tg f6">{avg}</td>
                     <td>{viols > 0 ? <span className="badge bg-red">{viols}</span> : '—'}</td>
+                    <td>
+                      <div className="flex g2">
+                        {ua.length > 0 && (
+                          <button className="btn btn-sm" style={{ background: '#fff7ed', color: '#b45309', border: '1px solid #fcd34d' }}
+                            onClick={() => setConfirmDel(u)}>
+                            Clear Tests
+                          </button>
+                        )}
+                        <button className="btn btn-sm" style={{ background: 'var(--red-lt)', color: 'var(--red)', border: '1px solid #fca5a5' }}
+                          onClick={() => deleteStudent(u)}>
+                          Delete
+                        </button>
+                      </div>
+                    </td>
                   </tr>);
                 })}
               </tbody>
             </table>
           </div>
+
+          {/* Confirm clear modal */}
+          {confirmDel && (
+            <div className="ov">
+              <div className="mo" style={{ maxWidth: 420 }}>
+                <div className="moh"><h3>⚠ Clear Test Records</h3><button className="mox" onClick={() => setConfirmDel(null)}>✕</button></div>
+                <div className="mob">
+                  <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12 }}>
+                    You are about to delete <strong>all exam attempt records</strong> for student:
+                  </p>
+                  <div style={{ background: '#f8fafc', border: '1px solid var(--gray-bd)', borderRadius: 4, padding: '11px 14px', marginBottom: 14 }}>
+                    <div style={{ fontWeight: 700 }}>{confirmDel.name}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text2)' }}>{confirmDel.email}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 4 }}>
+                      {atts.filter(a => a.userId === confirmDel.id).length} attempt record(s) will be permanently deleted.
+                    </div>
+                  </div>
+                  <div style={{ background: 'var(--red-lt)', border: '1px solid #fca5a5', borderRadius: 4, padding: '9px 12px', fontSize: 12, color: 'var(--red)' }}>
+                    ⚠ This action cannot be undone. The student's account will remain active.
+                  </div>
+                </div>
+                <div className="mof">
+                  <button className="btn btn-gray" onClick={() => setConfirmDel(null)}>Cancel</button>
+                  <button className="btn btn-red" onClick={() => clearStudentAttempts(confirmDel)}>Yes, Clear All Records</button>
+                </div>
+              </div>
+            </div>
+          )}
         </div></div>
       );
     }
 
     /* ══════ ADMIN RESULTS ══════════════════════════════════════════════════ */
     function AdminResults() {
-      const atts = DB.get('attempts', []);
+      const [atts, setAtts] = useState(DB.get('attempts', []));
+      const [filterExam, setFilterExam] = useState('');
+      const [filterStudent, setFilterStudent] = useState('');
       const exams = DB.get('exams', []);
       const users = DB.get('users', []);
+      const notify = useN();
       const fmt = s => { const m = Math.floor(s / 60), ss = s % 60; return `${m}m ${ss}s`; };
+
+      const rf = () => setAtts(DB.get('attempts', []));
+
+      const delAttempt = (id) => {
+        if (!window.confirm('Delete this attempt record permanently?')) return;
+        DB.set('attempts', DB.get('attempts', []).filter(a => a.id !== id));
+        rf();
+        notify('Attempt record deleted.', 's');
+      };
+
+      const delAllForExam = (examId) => {
+        const count = atts.filter(a => a.examId === examId).length;
+        if (!window.confirm(`Delete ALL ${count} attempt record(s) for this exam? Cannot be undone.`)) return;
+        DB.set('attempts', DB.get('attempts', []).filter(a => a.examId !== examId));
+        rf();
+        notify(`${count} records deleted.`, 's');
+      };
+
+      const students = users.filter(u => u.role === 'student');
+      const filtered = atts.filter(a => {
+        if (filterExam && a.examId !== filterExam) return false;
+        if (filterStudent && a.userId !== filterStudent) return false;
+        return true;
+      });
+
       return (
         <div className="main"><div className="mi">
-          <div className="phd"><div className="ptitle">All Results</div></div>
-          {atts.length === 0 ? <div className="empty"><div style={{ fontSize: 36, marginBottom: 10 }}>📊</div><div style={{ fontWeight: 600 }}>No results yet</div></div> : (
+          <div className="phd">
+            <div><div className="ptitle">All Results</div><div className="psub">{filtered.length} record(s)</div></div>
+            {filtered.length > 0 && filterExam && (
+              <button className="btn btn-sm" style={{ background: 'var(--red-lt)', color: 'var(--red)', border: '1px solid #fca5a5' }}
+                onClick={() => delAllForExam(filterExam)}>
+                🗑 Delete All for This Exam
+              </button>
+            )}
+          </div>
+
+          {/* Filters */}
+          <div className="flex g2 mb3" style={{ flexWrap: 'wrap' }}>
+            <select className="fc" style={{ width: 'auto' }} value={filterExam} onChange={e => setFilterExam(e.target.value)}>
+              <option value="">All Exams</option>
+              {exams.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
+            </select>
+            <select className="fc" style={{ width: 'auto' }} value={filterStudent} onChange={e => setFilterStudent(e.target.value)}>
+              <option value="">All Students</option>
+              {students.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+            </select>
+            {(filterExam || filterStudent) && (
+              <button className="btn btn-gray btn-sm" onClick={() => { setFilterExam(''); setFilterStudent(''); }}>Clear Filters</button>
+            )}
+          </div>
+
+          {filtered.length === 0 ? <div className="empty"><div style={{ fontSize: 36, marginBottom: 10 }}>📊</div><div style={{ fontWeight: 600 }}>{atts.length === 0 ? 'No results yet' : 'No results match the filters'}</div></div> : (
             <div className="tw">
               <table>
-                <thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Accuracy</th><th>Time</th><th>Tab Viols</th><th>Submitted</th><th>Reason</th></tr></thead>
-                <tbody>{[...atts].reverse().map(a => {
+                <thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Accuracy</th><th>Time</th><th>Tab Viols</th><th>Date</th><th>Reason</th><th>Action</th></tr></thead>
+                <tbody>{[...filtered].reverse().map(a => {
                   const ex = exams.find(e => e.id === a.examId);
                   const u = users.find(x => x.id === a.userId);
                   const ac = Math.round((a.results?.correct || 0) / (a.results?.total || 1) * 100);
                   return (<tr key={a.id}>
                     <td style={{ fontWeight: 600 }}>{u?.name || 'Unknown'}</td>
-                    <td className="tsm tm">{ex?.title?.slice(0, 28) || '—'}</td>
+                    <td className="tsm tm">{ex?.title?.slice(0, 24) || '—'}</td>
                     <td className="tb f7">{a.results?.score || 0}</td>
                     <td className="tg f6">{a.results?.correct || 0}</td>
                     <td className="tr f6">{a.results?.wrong || 0}</td>
@@ -3437,6 +3657,12 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
                     <td>{(a.tabWarnings || 0) > 0 ? <span className="badge bg-red">{a.tabWarnings}</span> : '—'}</td>
                     <td className="tsm td">{new Date(a.date).toLocaleDateString('en-IN')}</td>
                     <td>{a.reason === 'fullscreen_exit' ? <span className="badge bg-red">FS Exit</span> : a.reason === 'timer' ? <span className="badge bg-amber">Timeout</span> : <span className="badge bg-green">Manual</span>}</td>
+                    <td>
+                      <button className="btn btn-sm" style={{ background: 'var(--red-lt)', color: 'var(--red)', border: '1px solid #fca5a5' }}
+                        onClick={() => delAttempt(a.id)} title="Delete this record">
+                        🗑 Delete
+                      </button>
+                    </td>
                   </tr>);
                 })}</tbody>
               </table>
