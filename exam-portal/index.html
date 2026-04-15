@@ -1025,6 +1025,27 @@
       padding: 16px
     }
 
+    .q-img-w {
+      margin-bottom: 14px;
+      text-align: center;
+      background: #fdfdfd;
+      border: 1px solid var(--gray-bd);
+      border-radius: var(--radius);
+      padding: 8px;
+      overflow: hidden;
+      display: inline-block;
+      min-width: 100px
+    }
+
+    .q-img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 2px;
+      display: block;
+      margin: 0 auto
+    }
+
+
     .qbody {
       font-size: 14px;
       line-height: 1.9;
@@ -1864,11 +1885,72 @@
       return <span ref={r} style={{ lineHeight: 1.85 }} dangerouslySetInnerHTML={{ __html: (text || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>') }} />;
     }
 
+    function QImage({ qid, className = 'q-img' }) {
+      const [src, setSrc] = useState(null);
+      const [ld, setLd] = useState(true);
+      useEffect(() => {
+        let active = true;
+        if (qid) {
+          IDB.get(qid).then(res => { if (active) { setSrc(res); setLd(false); } }).catch(() => { if (active) setLd(false); });
+        } else setLd(false);
+        return () => { active = false; };
+      }, [qid]);
+      if (ld) return <div style={{ padding: 20, textAlign: 'center', color: 'var(--text3)', fontSize: 12 }}>Loading image...</div>;
+      if (!src) return null;
+      return <div className="q-img-w"><img src={src} className={className} alt="Question Diagram" /></div>;
+    }
+
+
     /* ══════ STORAGE ════════════════════════════════════════════════════════ */
     const DB = {
       get(k, d = null) { try { const v = localStorage.getItem('cb_' + k); return v ? JSON.parse(v) : d } catch { return d } },
       set(k, v) { try { localStorage.setItem('cb_' + k, JSON.stringify(v)) } catch { } }
     };
+
+    /* ══════ INDEXED DB (for large files) ══════════════════════════════════ */
+    const IDB = {
+      dbName: 'cb_files', storeName: 'images', db: null,
+      async open() {
+        if (this.db) return this.db;
+        return new Promise((resolve, reject) => {
+          const r = indexedDB.open(this.dbName, 1);
+          r.onupgradeneeded = (e) => { e.target.result.createObjectStore(this.storeName); };
+          r.onsuccess = (e) => { this.db = e.target.result; resolve(this.db); };
+          r.onerror = (e) => reject(e.target.error);
+        });
+      },
+      async get(id) {
+        if (!id) return null;
+        const db = await this.open();
+        return new Promise((resolve, reject) => {
+          const t = db.transaction(this.storeName, 'readonly');
+          const r = t.objectStore(this.storeName).get(id);
+          r.onsuccess = () => resolve(r.result);
+          r.onerror = () => reject(r.error);
+        });
+      },
+      async set(id, val) {
+        if (!id) return;
+        const db = await this.open();
+        return new Promise((resolve, reject) => {
+          const t = db.transaction(this.storeName, 'readwrite');
+          const r = t.objectStore(this.storeName).put(val, id);
+          r.onsuccess = () => resolve();
+          r.onerror = () => reject(r.error);
+        });
+      },
+      async del(id) {
+        if (!id) return;
+        const db = await this.open();
+        return new Promise((resolve, reject) => {
+          const t = db.transaction(this.storeName, 'readwrite');
+          const r = t.objectStore(this.storeName).delete(id);
+          r.onsuccess = () => resolve();
+          r.onerror = () => reject(r.error);
+        });
+      }
+    };
+
     const uid = () => Math.random().toString(36).slice(2, 10);
 
     /* Default seed — admin only, no demo for students */
@@ -2572,6 +2654,7 @@
             {curQ && (
               <div className="qcard">
                 <div className="qbody"><MT text={curQ.text} /></div>
+                <QImage qid={curQ.id} />
 
                 {/* MCQ */}
                 {curQ.type === 'mcq' && (
@@ -2906,6 +2989,7 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
                     </div>
                     <div className="qrb">
                       <div style={{ fontSize: 14, lineHeight: 1.85, marginBottom: 10 }}><MT text={q.text} /></div>
+                      <QImage qid={q.id} />
 
                       {/* Options review */}
                       {q.options && q.options.map((opt, oi) => {
@@ -3145,14 +3229,23 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
     /* ══════ QUESTION EDITOR ════════════════════════════════════════════════ */
     function QuestionEditor({ examId, editQ, onSave, onCancel }) {
       const exams = DB.get('exams', []);
-      const blank = { examId: examId || exams[0]?.id || '', sectionId: '', type: 'mcq', num: 1, difficulty: 'medium', text: '', options: ['', '', '', ''], correct: null, explanation: '' };
+      const blank = { examId: examId || exams[0]?.id || '', sectionId: '', type: 'mcq', num: 1, difficulty: 'medium', text: '', options: ['', '', '', ''], correct: null, explanation: '', image: null, hasImage: false };
       const [f, setF] = useState(editQ ? { ...editQ } : { ...blank, sectionId: (exams.find(e => e.id == (examId || exams[0]?.id))?.sections || [])[0]?.id || '' });
       const [gen, setGen] = useState(false);
       const notify = useN();
       const tRef = useRef(null);
       const eRef = useRef(null);
+      const iRef = useRef(null);
 
-      useEffect(() => { if (editQ) setF({ ...editQ }); }, [editQ?.id]);
+      useEffect(() => {
+        if (editQ) {
+          setF({ ...editQ });
+          if (editQ.hasImage) {
+            IDB.get(editQ.id).then(img => setF(x => ({ ...x, image: img })));
+          }
+        }
+      }, [editQ?.id]);
+
 
       const curExam = exams.find(e => e.id === f.examId);
       const sections = curExam?.sections || [];
@@ -3175,6 +3268,19 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
         }
       };
       const isCor = (i) => f.type === 'mcq' ? f.correct === i : (Array.isArray(f.correct) && f.correct.includes(i));
+
+      const handleImage = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 30 * 1024 * 1024) { notify('Image too large (max 30MB)', 'w'); e.target.value = ''; return; }
+        const r = new FileReader();
+        r.onload = (ev) => {
+          s('image')(ev.target.result);
+          e.target.value = ''; // Clear value to allow re-upload of same file
+        };
+        r.readAsDataURL(file);
+      };
+
 
       const insertSym = (sym, ref) => {
         const el = ref?.current;
@@ -3217,7 +3323,7 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
         finally { setGen(false); }
       };
 
-      const save = () => {
+      const save = async () => {
         if (!f.examId) { notify('Select an exam', 'e'); return; }
         if (!f.sectionId) { notify('Select a section', 'e'); return; }
         if (!f.text.trim()) { notify('Question text required', 'e'); return; }
@@ -3227,8 +3333,22 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
         } else {
           if (f.correct === null || f.correct === '' || f.correct === undefined) { notify('Enter correct numerical answer', 'e'); return; }
         }
-        onSave({ ...f, id: editQ?.id || uid() });
+        
+        const qid = editQ?.id || uid();
+        const q = { ...f, id: qid, hasImage: !!f.image };
+        const qForStorage = { ...q };
+        delete qForStorage.image; // Keep image out of localStorage
+
+        try {
+          if (f.image) await IDB.set(qid, f.image);
+          else await IDB.del(qid);
+          onSave(qForStorage);
+        } catch (err) {
+          console.error(err);
+          notify('Error saving image to IndexedDB', 'e');
+        }
       };
+
 
       return (
         <div className="qe-grid">
@@ -3274,7 +3394,19 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
 
             {/* Question text */}
             <div className="card">
-              <div className="chd">Question Text <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text3)' }}>LaTeX: $inline$ or $$display$$</span></div>
+              <div className="chd" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>Question Text <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text3)' }}>LaTeX: $inline$ or $$display$$</span></div>
+                <div className="flex g2">
+                  <input type="file" ref={iRef} style={{ display: 'none' }} accept="image/*" onChange={handleImage} />
+                  <button className="btn btn-outline btn-sm" onClick={() => iRef.current?.click()}>📷 {f.image ? 'Change Image' : 'Upload Image'}</button>
+                  {f.image && <button className="btn btn-sm" style={{ background: '#fef2f2', color: 'var(--red)' }} onClick={() => s('image')(null)}>✕ Remove</button>}
+                </div>
+              </div>
+              {f.image && (
+                <div style={{ marginBottom: 11, textAlign: 'center', background: '#f8fafc', border: '1px solid var(--gray-bd)', borderRadius: 'var(--radius)', padding: 10 }}>
+                  <img src={f.image} style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 2 }} alt="Diagram Preview" />
+                </div>
+              )}
               <div className="mh">
                 {SYMS.map(([sym, lbl]) => (
                   <button key={sym} className="ms" title={'Insert: ' + sym} onClick={() => {
@@ -3350,9 +3482,14 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
                   {f.difficulty && <span className="badge bg-gray" style={{ textTransform: 'capitalize' }}>{f.difficulty}</span>}
                 </div>
               </div>
-              <div className="qbody" style={{ minHeight: 36 }}>
+              <div className="qbody" style={{ minHeight: 10 }}>
                 {f.text ? <MT text={f.text} /> : <span style={{ color: 'var(--text3)', fontStyle: 'italic' }}>Question text appears here…</span>}
               </div>
+              {f.image && (
+                <div className="q-img-w">
+                  <img src={f.image} className="q-img" alt="Diagram preview" />
+                </div>
+              )}
               {f.type !== 'numerical' && (f.options || []).map((opt, i) => (
                 <div key={i} className={`opt ${isCor(i) ? f.type === 'msq' ? 'sel-m' : 'sel' : ''}`} style={{ cursor: 'default', marginBottom: 6 }}>
                   {f.type === 'mcq' ? <div className="opt-rd" style={{ borderColor: isCor(i) ? 'var(--blue)' : '#d1d5db', background: isCor(i) ? 'var(--blue)' : 'transparent' }}>{isCor(i) && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}</div>
