@@ -509,10 +509,10 @@
       height: 100%;
       overflow: auto;
       background-color: #cbd5e1;
-      background-image: 
-        repeating-linear-gradient(45deg, rgba(255,255,255,0.4) 0px, rgba(255,255,255,0.4) 1px, transparent 1px, transparent 18px),
-        repeating-linear-gradient(-45deg, rgba(255,255,255,0.4) 0px, rgba(255,255,255,0.4) 1px, transparent 1px, transparent 18px),
-        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2) 0%, transparent 80%);
+      background-image:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.4) 0px, rgba(255, 255, 255, 0.4) 1px, transparent 1px, transparent 18px),
+        repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.4) 0px, rgba(255, 255, 255, 0.4) 1px, transparent 1px, transparent 18px),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2) 0%, transparent 80%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -578,7 +578,7 @@
       border-radius: 8px;
       transition: all .2s;
     }
-    
+
     .auth-tab:hover:not(.on) {
       color: #334155;
       background: rgba(15, 23, 42, 0.04);
@@ -629,7 +629,7 @@
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
       outline: none;
     }
-    
+
     .auth-bd .fc::placeholder {
       color: #94a3b8;
     }
@@ -653,6 +653,7 @@
       box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
       transform: translateY(-1px);
     }
+
     .layout {
       display: grid;
       grid-template-columns: 210px 1fr;
@@ -1841,7 +1842,428 @@
       white-space: nowrap
     }
 
+    /* ── PHONE INPUT ── */
+    .phone-group {
+      display: flex;
+      gap: 0;
+      align-items: stretch
+    }
+
+    .phone-cc {
+      width: 90px;
+      border-radius: 8px 0 0 8px;
+      border-right: none;
+      padding: 12px 8px;
+      font-size: 14px;
+      appearance: none;
+      -webkit-appearance: none;
+      background: #f1f5f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E") no-repeat right 8px center;
+      cursor: pointer
+    }
+
+    .phone-cc:focus {
+      background-color: #fff;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, .15)
+    }
+
+    .phone-num {
+      flex: 1;
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
+      font-size: 15px;
+      letter-spacing: .5px
+    }
+
+    /* ── OPTION IMAGES ── */
+    .opt-img-wrap {
+      width: 100%;
+      margin-top: 6px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #f8fafc;
+      border: 1px solid var(--gray-bd);
+      position: relative
+    }
+
+    .opt-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-height: 220px;
+      object-fit: contain;
+      transition: transform .2s
+    }
+
+    .opt:hover .opt-img {
+      transform: scale(1.02)
+    }
+
+    .opt-img-skeleton {
+      width: 100%;
+      height: 80px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0
+      }
+
+      100% {
+        background-position: -200% 0
+      }
+    }
+
+    .opt-upload-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border: 1px dashed var(--gray-bd);
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--text3);
+      cursor: pointer;
+      background: #fafafa;
+      transition: all .15s;
+      margin-top: 4px
+    }
+
+    .opt-upload-btn:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: var(--blue-lt)
+    }
+
+    .opt-img-preview {
+      width: 48px;
+      height: 36px;
+      object-fit: cover;
+      border-radius: 3px;
+      border: 1px solid var(--gray-bd)
+    }
+
+    /* ── MALPRACTICE MODAL ── */
+    .malp-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .85);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px
+    }
+
+    .malp-box {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 460px;
+      width: 100%;
+      text-align: center;
+      padding: 40px 32px;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, .4);
+      animation: malp-in .3s ease
+    }
+
+    .malp-icon {
+      font-size: 64px;
+      margin-bottom: 16px
+    }
+
+    .malp-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #dc2626;
+      margin-bottom: 10px
+    }
+
+    .malp-desc {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.7;
+      margin-bottom: 20px
+    }
+
+    .malp-reason {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #991b1b;
+      font-weight: 600;
+      margin-bottom: 20px
+    }
+
+    .malp-countdown {
+      font-size: 13px;
+      color: var(--text3)
+    }
+
+    @keyframes malp-in {
+      from {
+        transform: scale(.9);
+        opacity: 0
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1
+      }
+    }
+
+    /* ── TIMEOUT OVERLAY ── */
+    .timeout-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 8px 16px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 100;
+      animation: slideDown .3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px
+    }
+
+    .timeout-banner.warn {
+      background: #fef3c7;
+      color: #92400e;
+      border-bottom: 2px solid #fbbf24
+    }
+
+    .timeout-banner.danger {
+      background: #fef2f2;
+      color: #991b1b;
+      border-bottom: 2px solid #ef4444
+    }
+
+    .timeout-banner.auto-hide {
+      animation: slideDown .3s ease, fadeOut .4s ease 4.6s forwards
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: translateY(-100%);
+        pointer-events: none
+      }
+    }
+
+    .timeout-corner {
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      z-index: 200;
+      background: rgba(0, 0, 0, .85);
+      color: #fff;
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .35);
+      animation: corner-in .3s ease;
+      backdrop-filter: blur(8px)
+    }
+
+    .timeout-corner .tc-num {
+      font-size: 28px;
+      font-weight: 800;
+      font-family: 'Roboto Mono', monospace;
+      min-width: 32px;
+      text-align: center;
+      color: #ef4444;
+      animation: pulse-num 1s infinite
+    }
+
+    .timeout-corner .tc-label {
+      font-size: 12px;
+      opacity: .8;
+      line-height: 1.3
+    }
+
+    .timeout-corner.times-up {
+      background: rgba(220, 38, 38, .92);
+      padding: 14px 20px
+    }
+
+    .timeout-corner.times-up .tc-num {
+      color: #fff;
+      font-size: 20px;
+      animation: none
+    }
+
+    @keyframes corner-in {
+      from {
+        transform: translateY(20px) scale(.9);
+        opacity: 0
+      }
+
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100%)
+      }
+
+      to {
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes pulse-num {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1
+      }
+
+      50% {
+        transform: scale(1.08);
+        opacity: .7
+      }
+    }
+
+    /* ── MOBILE HAMBURGER ── */
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      padding: 6px;
+      cursor: pointer;
+      line-height: 1
+    }
+
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .5);
+      z-index: 149;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s
+    }
+
+    .drawer-overlay.show {
+      opacity: 1;
+      pointer-events: auto
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 260px;
+      background: #fff;
+      z-index: 150;
+      transform: translateX(-100%);
+      transition: transform .25s ease;
+      box-shadow: 4px 0 20px rgba(0, 0, 0, .15);
+      overflow-y: auto
+    }
+
+    .drawer.show {
+      transform: translateX(0)
+    }
+
+    /* ── MOBILE PALETTE SHEET ── */
+    .pal-toggle {
+      display: none;
+      position: fixed;
+      bottom: 60px;
+      right: 12px;
+      z-index: 90;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      font-size: 18px;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .25);
+      cursor: pointer;
+      align-items: center;
+      justify-content: center
+    }
+
+    .pal-sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .4);
+      z-index: 170;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s
+    }
+
+    .pal-sheet-overlay.show {
+      opacity: 1;
+      pointer-events: auto
+    }
+
+    .pal-sheet {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      z-index: 171;
+      border-radius: 16px 16px 0 0;
+      max-height: 70vh;
+      transform: translateY(100%);
+      transition: transform .3s ease;
+      overflow-y: auto;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, .15)
+    }
+
+    .pal-sheet.show {
+      transform: translateY(0)
+    }
+
+    .pal-sheet-handle {
+      width: 36px;
+      height: 4px;
+      background: #d1d5db;
+      border-radius: 2px;
+      margin: 10px auto
+    }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:1024px) {
+      .qe-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: auto
+      }
+
+      .qe-right {
+        max-height: 400px
+      }
+    }
+
     @media(max-width:860px) {
+      .hamburger {
+        display: block
+      }
+
       .layout {
         grid-template-columns: 1fr
       }
@@ -1858,8 +2280,215 @@
         display: none
       }
 
+      .pal-toggle {
+        display: flex
+      }
+
       .qe-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: auto
+      }
+
+      .topbar {
+        padding: 0 10px
+      }
+
+      .tbar-logo {
+        font-size: 14px
+      }
+
+      .tbar-logo small {
+        display: none
+      }
+
+      .tbar-sep {
+        display: none
+      }
+
+      .mi {
+        padding: 12px
+      }
+
+      .stat-grid {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .egrid {
         grid-template-columns: 1fr
+      }
+
+      .phd {
+        flex-direction: column;
+        align-items: flex-start
+      }
+
+      .exam-tb {
+        flex-wrap: nowrap;
+        gap: 6px;
+        padding: 0 8px
+      }
+
+      .exam-title {
+        font-size: 12px
+      }
+
+      .exam-sub {
+        display: none
+      }
+
+      .sec-bar {
+        display: none
+      }
+
+      .exam-timer {
+        font-size: 15px;
+        padding: 4px 8px
+      }
+
+      .exam-foot {
+        padding: 6px 8px;
+        gap: 4px
+      }
+
+      .exam-foot .btn {
+        padding: 6px 10px;
+        font-size: 11px
+      }
+
+      .exam-main {
+        padding: 10px
+      }
+
+      .num-kp {
+        grid-template-columns: repeat(4, 38px)
+      }
+
+      .mo {
+        max-width: 95vw;
+        margin: 10px
+      }
+
+      .mob {
+        padding: 14px
+      }
+
+      .moh {
+        padding: 10px 14px
+      }
+
+      .mof {
+        padding: 10px 14px
+      }
+
+      .auth-box {
+        max-width: 100%;
+        border-radius: 12px
+      }
+
+      .auth-hd {
+        padding: 28px 20px 12px
+      }
+
+      .auth-logo {
+        font-size: 22px
+      }
+
+      .auth-bd {
+        padding: 20px
+      }
+
+      .tw {
+        font-size: 12px
+      }
+
+      th,
+      td {
+        padding: 7px 8px;
+        font-size: 11px
+      }
+
+      .res-hero {
+        padding: 16px
+      }
+
+      .rmg {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px
+      }
+
+      .rmi {
+        padding: 8px
+      }
+
+      .rmv {
+        font-size: 16px
+      }
+
+      .s-ring {
+        width: 76px;
+        height: 76px
+      }
+
+      .s-num {
+        font-size: 20px
+      }
+    }
+
+    @media(max-width:480px) {
+      .stat-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px
+      }
+
+      .sc {
+        padding: 10px
+      }
+
+      .sv {
+        font-size: 20px
+      }
+
+      .ptitle {
+        font-size: 16px
+      }
+
+      .exam-timer {
+        font-size: 13px;
+        padding: 3px 6px
+      }
+
+      .opt {
+        padding: 8px 10px
+      }
+
+      .rmg {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .auth-logo {
+        font-size: 20px
+      }
+
+      .phone-cc {
+        width: 78px;
+        padding: 10px 6px;
+        font-size: 13px
+      }
+
+      .phone-num {
+        padding: 10px 12px;
+        font-size: 14px
+      }
+
+      .btn {
+        padding: 6px 12px;
+        font-size: 12px
+      }
+
+      .btn-lg {
+        padding: 8px 18px;
+        font-size: 13px
       }
     }
   </style>
@@ -1899,6 +2528,57 @@
       if (!src) return null;
       return <div className="q-img-w"><img src={src} className={className} alt="Question Diagram" /></div>;
     }
+
+    /* ══════ OPTION IMAGE ═══════════════════════════════════════════════════ */
+    function OptImage({ imgId }) {
+      const [src, setSrc] = useState(null);
+      const [ld, setLd] = useState(true);
+      useEffect(() => {
+        let active = true;
+        if (imgId) {
+          IDB.get(imgId).then(res => { if (active) { setSrc(res); setLd(false); } }).catch(() => { if (active) setLd(false); });
+        } else { setLd(false); }
+        return () => { active = false; };
+      }, [imgId]);
+      if (ld) return <div className="opt-img-skeleton" />;
+      if (!src) return null;
+      return <div className="opt-img-wrap"><img src={src} className="opt-img" alt="Option" loading="lazy" /></div>;
+    }
+
+    /* ══════ IMAGE COMPRESSION ══════════════════════════════════════════════ */
+    async function compressImage(dataUrl, maxWidth = 800, quality = 0.8) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/webp', quality));
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+      });
+    }
+
+    /* ══════ COUNTRY CODES ══════════════════════════════════════════════════ */
+    const COUNTRY_CODES = [
+      { code: '+91', label: '🇮🇳 +91', country: 'India', len: 10 },
+      { code: '+1', label: '🇺🇸 +1', country: 'USA', len: 10 },
+      { code: '+44', label: '🇬🇧 +44', country: 'UK', len: 10 },
+      { code: '+61', label: '🇦🇺 +61', country: 'AU', len: 9 },
+      { code: '+81', label: '🇯🇵 +81', country: 'JP', len: 10 },
+      { code: '+86', label: '🇨🇳 +86', country: 'CN', len: 11 },
+      { code: '+49', label: '🇩🇪 +49', country: 'DE', len: 11 },
+      { code: '+33', label: '🇫🇷 +33', country: 'FR', len: 9 },
+      { code: '+971', label: '🇦🇪 +971', country: 'UAE', len: 9 },
+      { code: '+65', label: '🇸🇬 +65', country: 'SG', len: 8 },
+      { code: '+880', label: '🇧🇩 +880', country: 'BD', len: 10 },
+      { code: '+977', label: '🇳🇵 +977', country: 'NP', len: 10 },
+      { code: '+94', label: '🇱🇰 +94', country: 'LK', len: 9 },
+    ];
 
 
     /* ══════ STORAGE ════════════════════════════════════════════════════════ */
@@ -1955,10 +2635,25 @@
 
     /* Default seed — admin only, no demo for students */
     (() => {
-      // Ensure admin exists even if already inited
+      /* ── MIGRATION: email → mobile ── */
       const users = DB.get('users', []);
-      if (!users.some(u => u.role === 'admin' && u.email === 'atanu@gmail.com')) {
-        users.push({ id: 'adm1', name: 'Atanu Dutta', email: 'atanu@gmail.com', password: 'Atanu@123', role: 'admin', joinDate: '2025-01-01' });
+      let migrated = false;
+      users.forEach(u => {
+        if (u.email && !u.mobile) {
+          /* Extract digits from email prefix as fallback mobile */
+          const digits = (u.email.match(/\d+/g) || []).join('');
+          u.mobile = digits.length >= 7 ? digits.slice(0, 10) : '0000000000';
+          u.countryCode = '+91';
+          migrated = true;
+        }
+      });
+      if (migrated) DB.set('users', users);
+
+      // Ensure admin exists
+      if (!users.some(u => u.role === 'admin' && u.mobile === '7003902225')) {
+        const existing = users.findIndex(u => u.role === 'admin' && u.email === 'atanu@gmail.com');
+        if (existing >= 0) { users[existing].mobile = '7003902225'; users[existing].countryCode = '+91'; }
+        else users.push({ id: 'adm1', name: 'Atanu Dutta', mobile: '7003902225', countryCode: '+91', password: 'Atanu@123', role: 'admin', joinDate: '2025-01-01' });
         DB.set('users', users);
       }
 
@@ -2053,25 +2748,35 @@
     /* ══════ AUTH ═══════════════════════════════════════════════════════════ */
     function AuthPage({ onLogin }) {
       const [tab, setTab] = useState('login');
-      const [f, setF] = useState({ name: '', email: '', password: '', role: 'student' });
+      const [f, setF] = useState({ name: '', mobile: '', countryCode: '+91', password: '', role: 'student' });
       const [err, setErr] = useState('');
       const [busy, setBusy] = useState(false);
       const notify = useN();
       const s = k => e => setF(x => ({ ...x, [k]: e.target.value }));
 
+      const validateMobile = (mobile, cc) => {
+        const digits = mobile.replace(/\D/g, '');
+        const ccInfo = COUNTRY_CODES.find(c => c.code === cc);
+        const expectedLen = ccInfo?.len || 10;
+        if (digits.length !== expectedLen) return `Mobile number must be ${expectedLen} digits for ${ccInfo?.country || 'selected country'}.`;
+        return null;
+      };
+
       const login = () => {
-        /* Capture values SYNCHRONOUSLY before any setState calls to avoid stale closure inside setTimeout */
-        const emailVal = (f.email || '').trim().toLowerCase();
-        const passVal = (f.password || '');
-        if (!emailVal || !passVal) { setErr('Please enter your email and password.'); return; }
+        const mobileVal = (f.mobile || '').replace(/\D/g, '');
+        const ccVal = f.countryCode;
+        const passVal = f.password || '';
+        if (!mobileVal || !passVal) { setErr('Please enter your mobile number and password.'); return; }
+        const mErr = validateMobile(mobileVal, ccVal);
+        if (mErr) { setErr(mErr); return; }
         setErr(''); setBusy(true);
         setTimeout(() => {
           const allUsers = DB.get('users', []);
-          const u = allUsers.find(x => (x.email || '').trim().toLowerCase() === emailVal && (x.password || '') === passVal);
+          const u = allUsers.find(x => (x.mobile || '').replace(/\D/g, '') === mobileVal && (x.countryCode || '+91') === ccVal && (x.password || '') === passVal);
           if (u) {
             notify('Welcome back, ' + u.name + '!', 's'); onLogin(u);
           } else {
-            setErr('Invalid email or password. Please try again.');
+            setErr('Invalid mobile number or password. Please try again.');
           }
           setBusy(false);
         }, 350);
@@ -2080,20 +2785,28 @@
       const register = () => {
         setErr('');
         const nameVal = f.name.trim();
-        const emailVal = f.email.trim().toLowerCase();
+        const mobileVal = (f.mobile || '').replace(/\D/g, '');
+        const ccVal = f.countryCode;
         const passVal = f.password;
-        if (!nameVal || !emailVal || !passVal.trim()) { setErr('All fields are required.'); return; }
+        if (!nameVal || !mobileVal || !passVal.trim()) { setErr('All fields are required.'); return; }
+        const mErr = validateMobile(mobileVal, ccVal);
+        if (mErr) { setErr(mErr); return; }
         if (passVal.length < 6) { setErr('Password must be at least 6 characters.'); return; }
         const users = DB.get('users', []);
-        if (users.find(u => (u.email || '').toLowerCase() === emailVal)) { setErr('This email is already registered.'); return; }
-        const nu = { id: uid(), name: nameVal, email: emailVal, password: passVal, role: 'student', joinDate: new Date().toISOString().slice(0, 10) };
+        if (users.find(u => (u.mobile || '').replace(/\D/g, '') === mobileVal && (u.countryCode || '+91') === ccVal)) { setErr('This mobile number is already registered.'); return; }
+        const nu = { id: uid(), name: nameVal, mobile: mobileVal, countryCode: ccVal, password: passVal, role: 'student', joinDate: new Date().toISOString().slice(0, 10) };
         const updatedUsers = [...users, nu];
         DB.set('users', updatedUsers);
-        /* Verify save worked */
         const saved = DB.get('users', []);
-        if (!saved.find(u => u.email === emailVal)) { setErr('Registration failed — storage error. Please try again.'); return; }
+        if (!saved.find(u => u.mobile === mobileVal)) { setErr('Registration failed — storage error. Please try again.'); return; }
         notify('Account created! Welcome, ' + nu.name, 's');
         onLogin(nu);
+      };
+
+      const formatMobileDisplay = (val) => {
+        const digits = val.replace(/\D/g, '');
+        if (digits.length <= 5) return digits;
+        return digits.slice(0, 5) + ' ' + digits.slice(5);
       };
 
       return (
@@ -2118,8 +2831,25 @@
                 </div>
               )}
               <div className="fl">
-                <label className="flbl">Email Address</label>
-                <input className="fc" type="email" placeholder="your@email.com" value={f.email} onChange={s('email')} onKeyDown={e => e.key === 'Enter' && (tab === 'login' ? login() : register())} />
+                <label className="flbl">Mobile Number</label>
+                <div className="phone-group">
+                  <select className="fc phone-cc" value={f.countryCode} onChange={s('countryCode')}>
+                    {COUNTRY_CODES.map(cc => (
+                      <option key={cc.code} value={cc.code}>{cc.label}</option>
+                    ))}
+                  </select>
+                  <input
+                    className="fc phone-num"
+                    type="tel"
+                    placeholder="Enter mobile number"
+                    value={f.mobile}
+                    onChange={e => {
+                      const v = e.target.value.replace(/[^\d\s]/g, '').replace(/\s+/g, '');
+                      setF(x => ({ ...x, mobile: v.slice(0, 15) }));
+                    }}
+                    onKeyDown={e => e.key === 'Enter' && (tab === 'login' ? login() : register())}
+                  />
+                </div>
               </div>
               <div className="fl">
                 <label className="flbl">Password</label>
@@ -2132,7 +2862,7 @@
               {tab === 'login' && (
                 <div style={{ marginTop: 14, padding: 11, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12, color: '#4b5563', lineHeight: 1.6 }}>
                   <strong>Admin login:</strong> Contact your administrator for credentials.<br />
-                  <strong>Students:</strong> Register above to create your account.
+                  <strong>Students:</strong> Please register above to create your account.
                 </div>
               )}
             </div>
@@ -2374,11 +3104,33 @@
       const [showSub, setShowSub] = useState(false);
       const [tabWarns, setTabWarns] = useState(0);
       const [saved, setSaved] = useState(false);
+      const [showPalette, setShowPalette] = useState(false);
+      const [malpTerminated, setMalpTerminated] = useState(null); // {reason, countdown}
+      const [malpEvents, setMalpEvents] = useState([]);
+      const [timeoutCountdown, setTimeoutCountdown] = useState(null); // null or seconds
+      const [timeWarning, setTimeWarning] = useState(null); // 'warn' | 'danger' | null
       const notify = useN();
       const submittedRef = useRef(false);
+      const tabWarnsRef = useRef(0);
+      const doSubmitRef = useRef(null);
 
       const secQs = useMemo(() => questions.filter(q => q.sectionId === curSec), [questions, curSec]);
       const curQ = secQs[curIdx];
+
+      /* ── malpractice logger ── */
+      const logMalpractice = useCallback((type, details = '') => {
+        const evt = { type, timestamp: new Date().toISOString(), details, userAgent: navigator.userAgent };
+        setMalpEvents(prev => [...prev, evt]);
+      }, []);
+
+      /* ── terminate exam due to malpractice ── */
+      const terminateExam = useCallback((reason, reasonLabel) => {
+        if (submittedRef.current) return;
+        submittedRef.current = true;
+        logMalpractice(reason, 'Auto-terminated');
+        setMalpTerminated({ reason: reasonLabel, countdown: 5 });
+        try { if (document.fullscreenElement) document.exitFullscreen(); } catch { }
+      }, [logMalpractice]);
 
       /* ── helpers ── */
       const hasAnswer = useCallback((id, ans = answers) => {
@@ -2400,10 +3152,19 @@
         setQStart(Date.now());
       }, [curQ?.id]);
 
-      /* Timer */
+      /* Timer with countdown warnings */
       useEffect(() => {
         const id = setInterval(() => setTimeLeft(t => {
-          if (t <= 1) { clearInterval(id); doSubmit(true, 'timer'); return 0; }
+          if (t <= 1) {
+            clearInterval(id);
+            setTimeoutCountdown(0);
+            setTimeout(() => { if (doSubmitRef.current) doSubmitRef.current(true, 'timer'); }, 500);
+            return 0;
+          }
+          // Time warnings
+          if (t === 300) setTimeWarning('warn');
+          if (t === 60) setTimeWarning('danger');
+          if (t <= 10 && t > 0) setTimeoutCountdown(t);
           return t - 1;
         }), 1000);
         return () => clearInterval(id);
@@ -2415,35 +3176,86 @@
         return () => clearInterval(id);
       }, []);
 
-      /* Fullscreen guard — exit = immediate cancel */
+      /* Fullscreen guard — exit = immediate terminate */
       useEffect(() => {
         const fn = () => {
           if (!document.fullscreenElement && !submittedRef.current) {
-            submittedRef.current = true;
-            notify('⚠ Fullscreen exited — exam cancelled and submitted!', 'e');
-            setTimeout(() => doSubmit(true, 'fullscreen_exit'), 600);
+            logMalpractice('fullscreen_exit', 'Exited fullscreen mode');
+            terminateExam('fullscreen_exit', 'You exited fullscreen mode during the exam.');
           }
         };
         document.addEventListener('fullscreenchange', fn);
         return () => document.removeEventListener('fullscreenchange', fn);
       }, []);
 
-      /* Tab switch */
+      /* Tab switch — 3 warnings then terminate */
       useEffect(() => {
         const fn = () => {
-          if (document.hidden) {
-            setTabWarns(w => { const n = w + 1; notify(`⚠ Tab violation ${n} detected!`, 'w'); return n; });
+          if (document.hidden && !submittedRef.current) {
+            tabWarnsRef.current += 1;
+            const w = tabWarnsRef.current;
+            setTabWarns(w);
+            logMalpractice('tab_switch', `Tab switch violation #${w}`);
+            if (w >= 3) {
+              terminateExam('tab_switch', `You switched tabs ${w} times. Exam terminated.`);
+            } else {
+              notify(`⚠ Tab violation ${w}/3 — exam will auto-terminate at 3!`, 'w');
+            }
           }
         };
         document.addEventListener('visibilitychange', fn);
         return () => document.removeEventListener('visibilitychange', fn);
       }, []);
 
-      /* Right-click off */
+      /* Right-click disabled */
       useEffect(() => {
-        const fn = e => e.preventDefault();
+        const fn = e => { e.preventDefault(); logMalpractice('right_click', 'Right-click attempted'); };
         document.addEventListener('contextmenu', fn);
         return () => document.removeEventListener('contextmenu', fn);
+      }, []);
+
+      /* Copy/Paste/Cut blocked */
+      useEffect(() => {
+        const block = (type) => (e) => {
+          e.preventDefault();
+          logMalpractice(type, `${type} attempted`);
+          notify(`⚠ ${type.charAt(0).toUpperCase() + type.slice(1)} is disabled during exam!`, 'w');
+        };
+        const onCopy = block('copy'), onPaste = block('paste'), onCut = block('cut');
+        document.addEventListener('copy', onCopy);
+        document.addEventListener('paste', onPaste);
+        document.addEventListener('cut', onCut);
+        return () => { document.removeEventListener('copy', onCopy); document.removeEventListener('paste', onPaste); document.removeEventListener('cut', onCut); };
+      }, []);
+
+      /* Suspicious keyboard shortcuts */
+      useEffect(() => {
+        const fn = (e) => {
+          const dominated = (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
+            (e.ctrlKey && e.key.toUpperCase() === 'U') ||
+            e.key === 'F12' ||
+            (e.ctrlKey && e.key.toUpperCase() === 'S') ||
+            (e.ctrlKey && e.key.toUpperCase() === 'P');
+          if (dominated) {
+            e.preventDefault();
+            e.stopPropagation();
+            logMalpractice('keyboard_shortcut', `Blocked: ${e.ctrlKey ? 'Ctrl+' : ''}${e.shiftKey ? 'Shift+' : ''}${e.key}`);
+            notify('⚠ This keyboard shortcut is blocked during exam!', 'w');
+          }
+        };
+        document.addEventListener('keydown', fn, true);
+        return () => document.removeEventListener('keydown', fn, true);
+      }, []);
+
+      /* Window blur detection */
+      useEffect(() => {
+        const fn = () => {
+          if (!submittedRef.current && !document.hidden) {
+            logMalpractice('window_blur', 'Window lost focus');
+          }
+        };
+        window.addEventListener('blur', fn);
+        return () => window.removeEventListener('blur', fn);
       }, []);
 
       /* Save time on Q */
@@ -2592,7 +3404,7 @@
       };
 
       const doSubmit = (auto = false, reason = 'manual') => {
-        if (submittedRef.current) return;
+        if (submittedRef.current && reason !== 'timer' && !malpTerminated) return;
         submittedRef.current = true;
         saveTime();
         try { if (document.fullscreenElement) document.exitFullscreen(); } catch { }
@@ -2603,10 +3415,37 @@
           sq.forEach(q => { const d = results.details[q.id]; if (d) { sc += d.pts; if (d.status === 'correct' || d.status === 'partial') cor++; else if (d.status === 'wrong') wr++; else sk++; } else sk++; });
           return { sectionId: sec.id, sectionName: sec.name, color: sec.color, score: sc, correct: cor, wrong: wr, skipped: sk, total: sq.length };
         });
-        const att = { id: uid(), examId: exam.id, userId: user.id, date: new Date().toISOString(), answers, states, timeSpent, results, sectionResults, totalTime: exam.duration * 60 - timeLeft, auto, reason, tabWarnings: tabWarns };
+
+        // Enforce 0 score penalty for malpractice
+        if (reason === 'malpractice') {
+          results.score = 0;
+          sectionResults.forEach(s => s.score = 0);
+        }
+
+        const att = { id: uid(), examId: exam.id, userId: user.id, date: new Date().toISOString(), answers, states, timeSpent, results, sectionResults, totalTime: exam.duration * 60 - timeLeft, auto, reason, tabWarnings: tabWarnsRef.current, malpracticeEvents: malpEvents };
         DB.set('attempts', [...DB.get('attempts', []), att]);
+        // Store malpractice logs separately for admin
+        if (malpEvents.length > 0) {
+          const logs = DB.get('malpractice_logs', []);
+          logs.push({ attemptId: att.id, userId: user.id, userName: user.name, examId: exam.id, examTitle: exam.title, events: malpEvents, timestamp: new Date().toISOString() });
+          DB.set('malpractice_logs', logs);
+        }
         onSubmit(att);
       };
+      doSubmitRef.current = doSubmit;
+
+      /* Malpractice termination countdown — submit after countdown */
+      useEffect(() => {
+        if (!malpTerminated) return;
+        if (malpTerminated.countdown <= 0) {
+          if (doSubmitRef.current) doSubmitRef.current(true, 'malpractice');
+          return;
+        }
+        const id = setTimeout(() => {
+          setMalpTerminated(prev => prev ? { ...prev, countdown: prev.countdown - 1 } : null);
+        }, 1000);
+        return () => clearTimeout(id);
+      }, [malpTerminated]);
 
       const fmt = s => {
         const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
@@ -2659,13 +3498,20 @@
                 {/* MCQ */}
                 {curQ.type === 'mcq' && (
                   <div className="opts">
-                    {(curQ.options || []).map((opt, i) => (
-                      <div key={i} className={`opt ${answers[curQ.id] === i ? 'sel' : ''}`} onClick={() => setAnswer(i)}>
-                        <div className="opt-rd">{answers[curQ.id] === i && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}</div>
-                        <span className="opt-k">{String.fromCharCode(65 + i)}.</span>
-                        <span className="opt-lbl"><MT text={opt} /></span>
-                      </div>
-                    ))}
+                    {(curQ.options || []).map((opt, i) => {
+                      const optText = typeof opt === 'object' ? opt.text : opt;
+                      const optImgId = typeof opt === 'object' ? opt.optionImageId : (curQ.optionImages && curQ.optionImages[i]);
+                      return (
+                        <div key={i} className={`opt ${answers[curQ.id] === i ? 'sel' : ''}`} onClick={() => setAnswer(i)} style={optImgId ? { flexDirection: 'column', alignItems: 'stretch' } : {}}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, width: '100%' }}>
+                            <div className="opt-rd">{answers[curQ.id] === i && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}</div>
+                            <span className="opt-k">{String.fromCharCode(65 + i)}.</span>
+                            <span className="opt-lbl"><MT text={optText} /></span>
+                          </div>
+                          {optImgId && <OptImage imgId={optImgId} />}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
 
@@ -2676,11 +3522,16 @@
                     <div className="opts">
                       {(curQ.options || []).map((opt, i) => {
                         const sel = (Array.isArray(answers[curQ.id]) ? answers[curQ.id] : []).includes(i);
+                        const optText = typeof opt === 'object' ? opt.text : opt;
+                        const optImgId = typeof opt === 'object' ? opt.optionImageId : (curQ.optionImages && curQ.optionImages[i]);
                         return (
-                          <div key={i} className={`opt ${sel ? 'sel-m' : ''}`} onClick={() => setAnswer(i)}>
-                            <div className="opt-cb">{sel && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}</div>
-                            <span className="opt-k">{String.fromCharCode(65 + i)}.</span>
-                            <span className="opt-lbl"><MT text={opt} /></span>
+                          <div key={i} className={`opt ${sel ? 'sel-m' : ''}`} onClick={() => setAnswer(i)} style={optImgId ? { flexDirection: 'column', alignItems: 'stretch' } : {}}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, width: '100%' }}>
+                              <div className="opt-cb">{sel && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}</div>
+                              <span className="opt-k">{String.fromCharCode(65 + i)}.</span>
+                              <span className="opt-lbl"><MT text={optText} /></span>
+                            </div>
+                            {optImgId && <OptImage imgId={optImgId} />}
                           </div>
                         );
                       })}
@@ -2801,6 +3652,78 @@
               </div>
             </div>
           )}
+
+          {/* Malpractice Termination Modal */}
+          {malpTerminated && (
+            <div className="malp-overlay">
+              <div className="malp-box">
+                <div className="malp-icon">🚫</div>
+                <div className="malp-title">Exam Terminated</div>
+                <div className="malp-desc">Your examination has been terminated due to a malpractice violation.</div>
+                <div className="malp-reason">⚠ {malpTerminated.reason}</div>
+                <div className="malp-desc">Your responses have been auto-submitted. You will be redirected shortly.</div>
+                <div className="malp-countdown">Redirecting in {malpTerminated.countdown}s...</div>
+              </div>
+            </div>
+          )}
+
+          {/* Timeout Corner Widget */}
+          {timeoutCountdown !== null && timeoutCountdown > 0 && (
+            <div className="timeout-corner">
+              <span style={{ fontSize: 18 }}>⏰</span>
+              <div className="tc-num">{timeoutCountdown}</div>
+              <div className="tc-label">seconds<br />remaining</div>
+            </div>
+          )}
+          {timeoutCountdown === 0 && (
+            <div className="timeout-corner times-up">
+              <span style={{ fontSize: 18 }}>⏰</span>
+              <div className="tc-num">Time's Up!</div>
+            </div>
+          )}
+
+          {/* Time Warning Banners — auto-hide after 5s */}
+          {timeWarning === 'warn' && timeLeft > 60 && (
+            <div className="timeout-banner warn auto-hide" onClick={() => setTimeWarning(null)}>
+              ⏱ 5 minutes remaining! Review your answers. <span style={{ fontSize: 11, marginLeft: 8, opacity: .7 }}>Click to dismiss</span>
+            </div>
+          )}
+          {timeWarning === 'danger' && timeLeft > 10 && (
+            <div className="timeout-banner danger auto-hide">
+              ⚠ Less than 1 minute! Auto-submit soon.
+            </div>
+          )}
+
+          {/* Mobile Palette Toggle */}
+          <button className="pal-toggle" onClick={() => setShowPalette(p => !p)}>📋</button>
+          <div className={`pal-sheet-overlay ${showPalette ? 'show' : ''}`} onClick={() => setShowPalette(false)} />
+          <div className={`pal-sheet ${showPalette ? 'show' : ''}`}>
+            <div className="pal-sheet-handle" />
+            <div className="pal-hd">Question Palette</div>
+            <div className="pal-legend">
+              {[[0, '#808080', 'Not Visited'], [1, '#c0392b', 'Not Answered'], [2, '#1a7a3c', 'Answered'], [3, '#6c3483', 'Marked']].map(([s, c, l]) => (
+                <div key={s} className="pl-item"><div className="pl-dot" style={{ background: c }} /><span>{l}</span></div>
+              ))}
+            </div>
+            {sections.map(sec => {
+              const sq = questions.filter(q => q.sectionId === sec.id);
+              return (
+                <div key={sec.id}>
+                  <div className="pal-sec" style={{ color: sec.color, background: sec.bgColor || '#f0f0f0' }}>{sec.name}</div>
+                  <div className="pal-grid">
+                    {sq.map((q, idx) => {
+                      const st = states[q.id] ?? 0;
+                      return (
+                        <button key={q.id} className={`pb p${st}`} onClick={() => { goTo(idx, sec.id); setShowPalette(false); }}>
+                          {q.num || idx + 1}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       );
     }
@@ -2813,7 +3736,39 @@
       const [aiLd, setAiLd] = useState({});
       const notify = useN();
       const { results, sectionResults } = attempt;
-      const totalMarks = questions.length * (exam.markingScheme?.mcq?.correct || 4);
+
+      // Dedicated screen for malpractice terminations
+      if (attempt.reason === 'malpractice') {
+        return (
+          <div className="main"><div className="mi">
+            <div className="flex ia mb3">
+              <button className="btn btn-outline btn-sm" onClick={onBack}>← Back</button>
+            </div>
+            <div style={{ textAlign: 'center', padding: '40px 20px', maxWidth: 600, margin: '0 auto' }}>
+              <div style={{ fontSize: 72, marginBottom: 16 }}>🚨</div>
+              <h1 style={{ color: 'var(--red)', fontSize: 28, marginBottom: 16 }}>Exam Terminated</h1>
+              <p style={{ fontSize: 16, color: 'var(--text2)', lineHeight: 1.6, marginBottom: 32 }}>
+                Your examination was auto-terminated and your result has been withheld due to a violation of the exam rules. This incident has been logged and reported to the administration.
+              </p>
+
+              <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '12px', padding: '24px', textAlign: 'left' }}>
+                <h3 style={{ color: '#991b1b', marginTop: 0, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>⚠</span> Recorded Violations
+                </h3>
+                <ul style={{ color: '#7f1d1d', margin: '12px 0 0', paddingLeft: 20, fontSize: 14, lineHeight: 1.6 }}>
+                  {attempt.malpracticeEvents?.map((e, i) => (
+                    <li key={i}>
+                      <strong>{e.type}</strong>: {e.details} <span style={{ opacity: 0.6, fontSize: 12 }}>({new Date(e.timestamp).toLocaleTimeString()})</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div></div>
+        );
+      }
+
+      const totalMarks = (results.total || questions.length) * (exam.markingScheme?.mcq?.correct || 4);
       const accuracy = Math.round((results.correct / (results.total || 1)) * 100);
 
       /* Real rank computed from actual attempt data for this exam */
@@ -2905,8 +3860,7 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
               <div className="card">
                 <div className="chd">Section-wise Performance</div>
                 {(sectionResults || []).map(sec => {
-                  const sq = questions.filter(q => q.sectionId === sec.sectionId);
-                  const max = sq.length * (exam.markingScheme?.mcq?.correct || 4);
+                  const max = (sec.total || 0) * (exam.markingScheme?.mcq?.correct || 4);
                   const pct = max > 0 ? Math.max(0, Math.round((sec.score / max) * 100)) : 0;
                   return (
                     <div key={sec.sectionId} className="spr">
@@ -2936,8 +3890,7 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
           {tab === 'section' && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 13 }}>
               {(sectionResults || []).map(sec => {
-                const sq = questions.filter(q => q.sectionId === sec.sectionId);
-                const max = sq.length * (exam.markingScheme?.mcq?.correct || 4);
+                const max = (sec.total || 0) * (exam.markingScheme?.mcq?.correct || 4);
                 const ac = Math.round((sec.correct / (sec.total || 1)) * 100);
                 return (
                   <div key={sec.sectionId} className="card">
@@ -3054,14 +4007,48 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
       const attempts = DB.get('attempts', []);
       const students = DB.get('users', []).filter(u => u.role === 'student');
       const avg = attempts.length ? Math.round(attempts.reduce((s, a) => s + (a.results?.score || 0), 0) / attempts.length) : 0;
+
+      // Auto-cleanup orphaned malpractice logs (e.g., from before deletion logic was added)
+      const rawMalpLogs = DB.get('malpractice_logs', []);
+      const malpLogs = rawMalpLogs.filter(log => attempts.some(a => a.id === log.attemptId));
+      if (rawMalpLogs.length !== malpLogs.length) {
+        DB.set('malpractice_logs', malpLogs);
+      }
+
       return (
         <div className="main"><div className="mi">
           <div className="phd"><div><div className="ptitle">Admin Dashboard</div><div className="psub">Platform overview</div></div></div>
           <div className="stat-grid">
-            {[{ ico: '📋', v: exams.length, l: 'Total Exams' }, { ico: '❓', v: questions.length, l: 'Questions' }, { ico: '👥', v: students.length, l: 'Students' }, { ico: '📝', v: attempts.length, l: 'Attempts' }, { ico: '📊', v: avg, l: 'Avg Score' }].map(s => (
-              <div key={s.l} className="sc"><div className="si">{s.ico}</div><div className="sv">{s.v}</div><div className="sl">{s.l}</div></div>
+            {[{ ico: '📋', v: exams.length, l: 'Total Exams' }, { ico: '❓', v: questions.length, l: 'Questions' }, { ico: '👥', v: students.length, l: 'Students' }, { ico: '📝', v: attempts.length, l: 'Attempts' }, { ico: '📊', v: avg, l: 'Avg Score' }, { ico: '🚨', v: malpLogs.length, l: 'Malpractice Alerts' }].map(s => (
+              <div key={s.l} className="sc"><div className="si">{s.ico}</div><div className="sv" style={s.l === 'Malpractice Alerts' && s.v > 0 ? { color: 'var(--red)' } : {}}>{s.v}</div><div className="sl">{s.l}</div></div>
             ))}
           </div>
+
+          {/* Malpractice Alerts */}
+          {malpLogs.length > 0 && (
+            <div className="card" style={{ marginBottom: 16 }}>
+              <div className="chd" style={{ color: 'var(--red)' }}>🚨 Malpractice Alerts</div>
+              <div className="tw">
+                <table>
+                  <thead><tr><th>Student</th><th>Exam</th><th>Violations</th><th>Types</th><th>Time</th></tr></thead>
+                  <tbody>{[...malpLogs].reverse().slice(0, 10).map((log, i) => {
+                    const types = [...new Set(log.events.map(e => e.type))];
+                    return (<tr key={i}>
+                      <td style={{ fontWeight: 600 }}>{log.userName}</td>
+                      <td className="tsm tm">{log.examTitle?.slice(0, 24) || '—'}</td>
+                      <td><span className="badge bg-red">{log.events.length}</span></td>
+                      <td><div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                        {types.slice(0, 3).map(t => <span key={t} style={{ fontSize: 10, padding: '1px 5px', borderRadius: 3, background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' }}>{t.replace(/_/g, ' ')}</span>)}
+                        {types.length > 3 && <span style={{ fontSize: 10, color: 'var(--text3)' }}>+{types.length - 3}</span>}
+                      </div></td>
+                      <td className="tsm td">{new Date(log.timestamp).toLocaleString('en-IN')}</td>
+                    </tr>);
+                  })}</tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           <div className="card">
             <div className="chd">Recent Attempts</div>
             {attempts.length === 0 ? <div className="empty">No attempts yet.</div> : (
@@ -3243,6 +4230,16 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
           if (editQ.hasImage) {
             IDB.get(editQ.id).then(img => setF(x => ({ ...x, image: img })));
           }
+          if (editQ.optionImages) {
+            const fetchPromises = [];
+            const prevs = {};
+            for (const [idx, key] of Object.entries(editQ.optionImages)) {
+              fetchPromises.push(IDB.get(key).then(img => { if (img) prevs[idx] = img; }));
+            }
+            Promise.all(fetchPromises).then(() => {
+              setF(x => ({ ...x, _optImgPreviews: prevs }));
+            });
+          }
         }
       }, [editQ?.id]);
 
@@ -3333,19 +4330,35 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
         } else {
           if (f.correct === null || f.correct === '' || f.correct === undefined) { notify('Enter correct numerical answer', 'e'); return; }
         }
-        
+
         const qid = editQ?.id || uid();
         const q = { ...f, id: qid, hasImage: !!f.image };
+        // Update option image IDs with final qid
+        if (q.optionImages) {
+          const updated = {};
+          Object.entries(q.optionImages).forEach(([idx, key]) => {
+            updated[idx] = 'optimg_' + qid + '_' + idx;
+          });
+          q.optionImages = updated;
+        }
         const qForStorage = { ...q };
-        delete qForStorage.image; // Keep image out of localStorage
+        delete qForStorage.image;
+        delete qForStorage._optImgPreviews;
 
         try {
           if (f.image) await IDB.set(qid, f.image);
           else await IDB.del(qid);
+          // Save option images to IDB
+          if (f._optImgPreviews) {
+            for (const [idx, data] of Object.entries(f._optImgPreviews)) {
+              const imgKey = 'optimg_' + qid + '_' + idx;
+              await IDB.set(imgKey, data);
+            }
+          }
           onSave(qForStorage);
         } catch (err) {
           console.error(err);
-          notify('Error saving image to IndexedDB', 'e');
+          notify('Error saving images to IndexedDB', 'e');
         }
       };
 
@@ -3422,17 +4435,57 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
             {/* Options / Answer */}
             {f.type !== 'numerical' ? (
               <div className="card">
-                <div className="chd">Options <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text3)' }}>— click ✓ to mark correct{f.type === 'msq' ? ' (multiple allowed)' : ''}</span></div>
-                {(f.options || []).map((opt, i) => (
-                  <div key={i} className="oe-row">
-                    <div className="oe-key">{String.fromCharCode(65 + i)}</div>
-                    <input className="fc" style={{ flex: 1 }} value={opt} onChange={e => setOpt(i, e.target.value)} placeholder={`Option ${String.fromCharCode(65 + i)} — supports $LaTeX$`} />
-                    <div className={`ctog ${isCor(i) ? 'ck' : ''}`} onClick={() => togCor(i)} title="Mark as correct">
-                      {isCor(i) && '✓'}
+                <div className="chd">Options <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text3)' }}>— click ✓ to mark correct{f.type === 'msq' ? ' (multiple allowed)' : ''} | 📷 to add image</span></div>
+                {(f.options || []).map((opt, i) => {
+                  const optImgId = f.optionImages && f.optionImages[i];
+                  const optImgPreview = f._optImgPreviews && f._optImgPreviews[i];
+                  return (
+                    <div key={i} style={{ marginBottom: 8 }}>
+                      <div className="oe-row">
+                        <div className="oe-key">{String.fromCharCode(65 + i)}</div>
+                        <input className="fc" style={{ flex: 1 }} value={opt} onChange={e => setOpt(i, e.target.value)} placeholder={`Option ${String.fromCharCode(65 + i)} — supports $LaTeX$`} />
+                        <div className={`ctog ${isCor(i) ? 'ck' : ''}`} onClick={() => togCor(i)} title="Mark as correct">
+                          {isCor(i) && '✓'}
+                        </div>
+                        <label className="opt-upload-btn" title="Upload option image">
+                          📷
+                          <input type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }} onChange={async (e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            if (file.size > 5 * 1024 * 1024) { notify('Option image max 5MB', 'w'); e.target.value = ''; return; }
+                            const r = new FileReader();
+                            r.onload = async (ev) => {
+                              const compressed = await compressImage(ev.target.result, 600, 0.75);
+                              setF(x => {
+                                const imgs = { ...(x.optionImages || {}) };
+                                const prevs = { ...(x._optImgPreviews || {}) };
+                                const imgKey = 'optimg_' + (x.id || 'new') + '_' + i;
+                                imgs[i] = imgKey;
+                                prevs[i] = compressed;
+                                return { ...x, optionImages: imgs, _optImgPreviews: prevs };
+                              });
+                              e.target.value = '';
+                            };
+                            r.readAsDataURL(file);
+                          }} />
+                        </label>
+                        {(f.options || []).length > 2 && <button style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: '0 4px', fontSize: 15 }} onClick={() => rmOpt(i)}>✕</button>}
+                      </div>
+                      {optImgPreview && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 33, marginTop: 4 }}>
+                          <img src={optImgPreview} className="opt-img-preview" alt="Option img" />
+                          <button style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: 11 }} onClick={() => {
+                            setF(x => {
+                              const imgs = { ...(x.optionImages || {}) }; const prevs = { ...(x._optImgPreviews || {}) };
+                              delete imgs[i]; delete prevs[i];
+                              return { ...x, optionImages: imgs, _optImgPreviews: prevs };
+                            });
+                          }}>✕ Remove</button>
+                        </div>
+                      )}
                     </div>
-                    {(f.options || []).length > 2 && <button style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: '0 4px', fontSize: 15 }} onClick={() => rmOpt(i)}>✕</button>}
-                  </div>
-                ))}
+                  );
+                })}
                 <div className="flex ia g2 mt2">
                   <button className="btn btn-gray btn-sm" onClick={addOpt}>+ Add Option</button>
                   <span style={{ fontSize: 11, color: 'var(--text3)' }}>Green ✓ = correct answer</span>
@@ -3623,7 +4676,9 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
 
       const clearStudentAttempts = (u) => {
         const remaining = DB.get('attempts', []).filter(a => a.userId !== u.id);
+        const remainingMalp = DB.get('malpractice_logs', []).filter(a => a.userId !== u.id);
         DB.set('attempts', remaining);
+        DB.set('malpractice_logs', remainingMalp);
         rf();
         setConfirmDel(null);
         notify(`All test records for ${u.name} cleared.`, 's');
@@ -3633,8 +4688,10 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
         if (!window.confirm(`Delete student "${u.name}" and ALL their attempts? This cannot be undone.`)) return;
         const allUsers = DB.get('users', []).filter(x => x.id !== u.id);
         const remaining = DB.get('attempts', []).filter(a => a.userId !== u.id);
+        const remainingMalp = DB.get('malpractice_logs', []).filter(a => a.userId !== u.id);
         DB.set('users', allUsers);
         DB.set('attempts', remaining);
+        DB.set('malpractice_logs', remainingMalp);
         rf();
         notify(`Student ${u.name} deleted.`, 's');
       };
@@ -3644,7 +4701,7 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
           <div className="phd"><div className="ptitle">Students</div><div className="psub">{users.length} registered</div></div>
           <div className="tw">
             <table>
-              <thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Exams Taken</th><th>Avg Score</th><th>Tab Violations</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Name</th><th>Mobile</th><th>Joined</th><th>Exams Taken</th><th>Avg Score</th><th>Tab Violations</th><th>Actions</th></tr></thead>
               <tbody>
                 {users.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', padding: 36, color: 'var(--text3)' }}>No students registered yet</td></tr>}
                 {users.map(u => {
@@ -3658,7 +4715,7 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
                         <span style={{ fontWeight: 600 }}>{u.name}</span>
                       </div>
                     </td>
-                    <td className="tsm tm">{u.email}</td>
+                    <td className="tsm tm">{(u.countryCode || '+91')} {u.mobile || u.email || '—'}</td>
                     <td className="tsm td">{u.joinDate}</td>
                     <td className="tb f7">{ua.length}</td>
                     <td className="tg f6">{avg}</td>
@@ -3694,7 +4751,7 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
                   </p>
                   <div style={{ background: '#f8fafc', border: '1px solid var(--gray-bd)', borderRadius: 4, padding: '11px 14px', marginBottom: 14 }}>
                     <div style={{ fontWeight: 700 }}>{confirmDel.name}</div>
-                    <div style={{ fontSize: 12, color: 'var(--text2)' }}>{confirmDel.email}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text2)' }}>{(confirmDel.countryCode || '+91')} {confirmDel.mobile || confirmDel.email || ''}</div>
                     <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 4 }}>
                       {atts.filter(a => a.userId === confirmDel.id).length} attempt record(s) will be permanently deleted.
                     </div>
@@ -3729,6 +4786,7 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
       const delAttempt = (id) => {
         if (!window.confirm('Delete this attempt record permanently?')) return;
         DB.set('attempts', DB.get('attempts', []).filter(a => a.id !== id));
+        DB.set('malpractice_logs', DB.get('malpractice_logs', []).filter(a => a.attemptId !== id));
         rf();
         notify('Attempt record deleted.', 's');
       };
@@ -3737,6 +4795,7 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
         const count = atts.filter(a => a.examId === examId).length;
         if (!window.confirm(`Delete ALL ${count} attempt record(s) for this exam? Cannot be undone.`)) return;
         DB.set('attempts', DB.get('attempts', []).filter(a => a.examId !== examId));
+        DB.set('malpractice_logs', DB.get('malpractice_logs', []).filter(a => a.examId !== examId));
         rf();
         notify(`${count} records deleted.`, 's');
       };
@@ -3793,7 +4852,7 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
                     <td className="tsm tm">{fmt(a.totalTime || 0)}</td>
                     <td>{(a.tabWarnings || 0) > 0 ? <span className="badge bg-red">{a.tabWarnings}</span> : '—'}</td>
                     <td className="tsm td">{new Date(a.date).toLocaleDateString('en-IN')}</td>
-                    <td>{a.reason === 'fullscreen_exit' ? <span className="badge bg-red">FS Exit</span> : a.reason === 'timer' ? <span className="badge bg-amber">Timeout</span> : <span className="badge bg-green">Manual</span>}</td>
+                    <td>{a.reason === 'fullscreen_exit' ? <span className="badge bg-red">FS Exit</span> : a.reason === 'timer' ? <span className="badge bg-amber">Timeout</span> : a.reason === 'malpractice' ? <span className="badge bg-red">Malpractice</span> : <span className="badge bg-green">Manual</span>}</td>
                     <td>
                       <button className="btn btn-sm" style={{ background: 'var(--red-lt)', color: 'var(--red)', border: '1px solid #fca5a5' }}
                         onClick={() => delAttempt(a.id)} title="Delete this record">
@@ -3845,11 +4904,12 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
       const [view, setView] = useState('auth');
       const [user, setUser] = useState(null);
       const [nav, setNav] = useState('dashboard');
-      const [pendingExam, setPendingExam] = useState(null);// waiting for modal
-      const [fsExam, setFsExam] = useState(null);         // waiting for fullscreen
+      const [pendingExam, setPendingExam] = useState(null);
+      const [fsExam, setFsExam] = useState(null);
       const [activeExam, setActiveExam] = useState(null);
       const [activeResult, setActiveResult] = useState(null);
       const [qbExam, setQbExam] = useState(null);
+      const [drawerOpen, setDrawerOpen] = useState(false);
       const notify = useN();
 
       const login = (u) => { setUser(u); setNav('dashboard'); setView('dashboard'); };
@@ -3858,12 +4918,12 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
         setUser(null); setView('auth'); setActiveExam(null); setFsExam(null); setPendingExam(null);
       };
 
-      /* Role guard */
       const guardedNav = (id) => {
         if (user?.role === 'student' && ['exams_manage', 'questions', 'students', 'results_admin'].includes(id)) {
           notify('Access denied. Admin only.', 'e'); return;
         }
         setNav(id);
+        setDrawerOpen(false);
       };
 
       const startExam = (exam) => {
@@ -3884,7 +4944,6 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
         </NotifProvider>
       );
 
-      /* Fullscreen gate screen */
       if (fsExam) return (
         <FsGate onEnter={enterFs} onBack={() => { setFsExam(null); setPendingExam(null); }} />
       );
@@ -3896,7 +4955,6 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
       };
 
       const renderMain = () => {
-        /* STRICT ROLE CHECK: students only see student pages */
         if (user?.role === 'student') {
           if (nav === 'dashboard' || nav === 'exams') return <StudentDashboard user={user} onStart={startExam} onResult={viewResult} />;
           if (nav === 'results') return <StudentResults user={user} onResult={viewResult} />;
@@ -3917,6 +4975,7 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
         return (
           <div className="layout">
             <div className="topbar">
+              <button className="hamburger" onClick={() => setDrawerOpen(true)}>☰</button>
               <div className="tbar-logo">Chhatro Bondhu Exam Portal<small>ছাত্র বন্ধু পরীক্ষা পোর্টাল</small></div>
               <div className="tbar-r">
                 <div className="tbar-user">
@@ -3924,6 +4983,10 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
                   <span>{user?.name}</span>
                 </div>
               </div>
+            </div>
+            <div className={`drawer-overlay ${drawerOpen ? 'show' : ''}`} onClick={() => setDrawerOpen(false)} />
+            <div className={`drawer ${drawerOpen ? 'show' : ''}`}>
+              <Sidebar user={user} active={nav} setActive={guardedNav} onLogout={logout} />
             </div>
             <Sidebar user={user} active={nav} setActive={guardedNav} onLogout={logout} />
             {exam && <ResultPage attempt={activeResult} exam={exam} onBack={() => setView('dashboard')} />}
@@ -3934,6 +4997,7 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
       return (
         <div className="layout">
           <div className="topbar">
+            <button className="hamburger" onClick={() => setDrawerOpen(true)}>☰</button>
             <div className="tbar-logo">Chhatro Bondhu Exam Portal<small>ছাত্র বন্ধু পরীক্ষা পোর্টাল</small></div>
             <div className="tbar-sep" />
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,.7)' }}>{topbarTitle()}</span>
@@ -3945,6 +5009,10 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
               </div>
               <button className="tbar-btn" onClick={logout}>Sign Out</button>
             </div>
+          </div>
+          <div className={`drawer-overlay ${drawerOpen ? 'show' : ''}`} onClick={() => setDrawerOpen(false)} />
+          <div className={`drawer ${drawerOpen ? 'show' : ''}`}>
+            <Sidebar user={user} active={nav} setActive={guardedNav} onLogout={logout} />
           </div>
           <Sidebar user={user} active={nav} setActive={guardedNav} onLogout={logout} />
           {renderMain()}
