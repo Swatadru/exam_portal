@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
   <title>Chhatro Bondhu Exam Portal</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Roboto+Mono:wght@400;500&display=swap"
@@ -62,6 +62,7 @@
     html,
     body {
       height: 100%;
+      height: 100dvh;
       background: var(--page);
       color: var(--text);
       font-family: 'Open Sans', sans-serif;
@@ -72,6 +73,7 @@
 
     #root {
       height: 100%;
+      height: 100dvh;
       display: flex;
       flex-direction: column
     }
@@ -886,8 +888,9 @@
     /* ────────────────────────── EXAM INTERFACE */
     .exam-shell {
       height: 100%;
+      height: 100dvh;
       display: grid;
-      grid-template-rows: 52px 1fr 50px;
+      grid-template-rows: 52px 1fr auto;
       grid-template-columns: 1fr 218px;
       overflow: hidden;
       background: #f5f5f5
@@ -1002,7 +1005,7 @@
       grid-column: 1/-1;
       background: #fff;
       border-top: 2px solid var(--gray-bd);
-      padding: 7px 14px;
+      padding: 7px 14px calc(7px + env(safe-area-inset-bottom, 0px));
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -2347,7 +2350,7 @@
       }
 
       .exam-foot {
-        padding: 6px 8px;
+        padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
         gap: 4px
       }
 
@@ -4665,11 +4668,26 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
       );
     }
 
+    function exportCSV(filename, rows) {
+      const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     /* ══════ ADMIN STUDENTS ═════════════════════════════════════════════════ */
     function AdminStudents() {
       const [users, setUsers] = useState(DB.get('users', []).filter(u => u.role === 'student'));
       const [atts, setAtts] = useState(DB.get('attempts', []));
       const [confirmDel, setConfirmDel] = useState(null);// {uid, name} to confirm
+      const [searchQuery, setSearchQuery] = useState('');
+      const [filterDate, setFilterDate] = useState('');
       const notify = useN();
 
       const rf = () => { setUsers(DB.get('users', []).filter(u => u.role === 'student')); setAtts(DB.get('attempts', [])); };
@@ -4696,15 +4714,47 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
         notify(`Student ${u.name} deleted.`, 's');
       };
 
+      const filteredUsers = users.filter(u => {
+        if (filterDate && u.joinDate !== filterDate) return false;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return u.name.toLowerCase().includes(q) || (u.mobile && u.mobile.includes(q));
+        }
+        return true;
+      });
+
+      const downloadExcel = () => {
+        const rows = [['Name', 'Mobile', 'Joined', 'Exams Taken', 'Avg Score', 'Tab Violations']];
+        filteredUsers.forEach(u => {
+          const ua = atts.filter(a => a.userId === u.id);
+          const avg = ua.length ? Math.round(ua.reduce((s, a) => s + (a.results?.score || 0), 0) / ua.length) : '-';
+          const viols = ua.reduce((s, a) => s + (a.tabWarnings || 0), 0);
+          rows.push([u.name, (u.countryCode || '+91') + ' ' + (u.mobile || u.email || ''), u.joinDate, ua.length, avg, viols]);
+        });
+        exportCSV('students_data.csv', rows);
+      };
+
       return (
         <div className="main"><div className="mi">
-          <div className="phd"><div className="ptitle">Students</div><div className="psub">{users.length} registered</div></div>
+          <div className="phd" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div><div className="ptitle">Students</div><div className="psub">{filteredUsers.length} of {users.length} registered</div></div>
+              <button className="btn btn-green btn-sm" onClick={downloadExcel}>Download Excel</button>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <input type="date" className="fc" style={{ width: 'auto' }} value={filterDate} onChange={e => setFilterDate(e.target.value)} />
+              <input type="text" className="fc" style={{ width: '250px' }} placeholder="Search students by name or mobile..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+              {(filterDate || searchQuery) && (
+                <button className="btn btn-gray btn-sm" onClick={() => { setFilterDate(''); setSearchQuery(''); }}>Clear</button>
+              )}
+            </div>
+          </div>
           <div className="tw">
             <table>
               <thead><tr><th>Name</th><th>Mobile</th><th>Joined</th><th>Exams Taken</th><th>Avg Score</th><th>Tab Violations</th><th>Actions</th></tr></thead>
               <tbody>
-                {users.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', padding: 36, color: 'var(--text3)' }}>No students registered yet</td></tr>}
-                {users.map(u => {
+                {filteredUsers.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', padding: 36, color: 'var(--text3)' }}>{users.length === 0 ? 'No students registered yet' : 'No students match your search'}</td></tr>}
+                {filteredUsers.map(u => {
                   const ua = atts.filter(a => a.userId === u.id);
                   const avg = ua.length ? Math.round(ua.reduce((s, a) => s + (a.results?.score || 0), 0) / ua.length) : '—';
                   const viols = ua.reduce((s, a) => s + (a.tabWarnings || 0), 0);
@@ -4776,6 +4826,8 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
       const [atts, setAtts] = useState(DB.get('attempts', []));
       const [filterExam, setFilterExam] = useState('');
       const [filterStudent, setFilterStudent] = useState('');
+      const [searchQuery, setSearchQuery] = useState('');
+      const [filterDate, setFilterDate] = useState('');
       const exams = DB.get('exams', []);
       const users = DB.get('users', []);
       const notify = useN();
@@ -4804,13 +4856,38 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
       const filtered = atts.filter(a => {
         if (filterExam && a.examId !== filterExam) return false;
         if (filterStudent && a.userId !== filterStudent) return false;
+        if (filterDate && !a.date.startsWith(filterDate)) return false;
+        if (searchQuery) {
+          const u = users.find(u => u.id === a.userId);
+          const e = exams.find(e => e.id === a.examId);
+          const uName = u ? u.name.toLowerCase() : '';
+          const eTitle = e ? e.title.toLowerCase() : '';
+          const q = searchQuery.toLowerCase();
+          if (!uName.includes(q) && !eTitle.includes(q)) return false;
+        }
         return true;
       });
 
+      const downloadExcel = () => {
+        const rows = [['Student', 'Exam', 'Score', 'Correct', 'Wrong', 'Accuracy', 'Time', 'Tab Viols', 'Date', 'Reason']];
+        filtered.forEach(a => {
+          const u = users.find(u => u.id === a.userId);
+          const e = exams.find(e => e.id === a.examId);
+          const uName = u ? u.name : 'Unknown';
+          const eTitle = e ? e.title : 'Deleted Exam';
+          const acc = Math.round((a.results?.correct || 0) / (a.results?.total || 1) * 100) + '%';
+          rows.push([uName, eTitle, a.results?.score || 0, a.results?.correct || 0, a.results?.wrong || 0, acc, fmt(a.timeSpent || 0), a.tabWarnings || 0, new Date(a.date).toLocaleDateString('en-IN'), a.reason === 'malpractice' ? 'Terminated' : (a.auto ? 'Auto-submitted' : 'Submitted')]);
+        });
+        exportCSV('results_data.csv', rows);
+      };
+
       return (
         <div className="main"><div className="mi">
-          <div className="phd">
-            <div><div className="ptitle">All Results</div><div className="psub">{filtered.length} record(s)</div></div>
+          <div className="phd" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div><div className="ptitle">All Results</div><div className="psub">{filtered.length} record(s)</div></div>
+              <button className="btn btn-green btn-sm" onClick={downloadExcel}>Download Excel</button>
+            </div>
             {filtered.length > 0 && filterExam && (
               <button className="btn btn-sm" style={{ background: 'var(--red-lt)', color: 'var(--red)', border: '1px solid #fca5a5' }}
                 onClick={() => delAllForExam(filterExam)}>
@@ -4829,8 +4906,10 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
               <option value="">All Students</option>
               {students.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
             </select>
-            {(filterExam || filterStudent) && (
-              <button className="btn btn-gray btn-sm" onClick={() => { setFilterExam(''); setFilterStudent(''); }}>Clear Filters</button>
+            <input type="date" className="fc" style={{ width: 'auto' }} value={filterDate} onChange={e => setFilterDate(e.target.value)} />
+            <input type="text" className="fc" style={{ width: '250px' }} placeholder="Search student or exam name..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+            {(filterExam || filterStudent || searchQuery || filterDate) && (
+              <button className="btn btn-gray btn-sm" onClick={() => { setFilterExam(''); setFilterStudent(''); setSearchQuery(''); setFilterDate(''); }}>Clear Filters</button>
             )}
           </div>
 
