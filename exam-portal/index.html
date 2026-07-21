@@ -2669,7 +2669,20 @@
     const collections = ['users', 'exams', 'questions', 'attempts', 'malpractice_logs'];
     collections.forEach(key => {
       db.ref(key).on('value', (snapshot) => {
-        ClientDB[key] = snapshot.val() || [];
+        let val = snapshot.val() || [];
+        if (!Array.isArray(val) && typeof val === 'object') {
+          val = Object.values(val); // Convert Firebase object-arrays back to real arrays
+        }
+        ClientDB[key] = val;
+        
+        // Safely ensure admin exists after we fetch the real users array from Firebase
+        if (key === 'users') {
+          if (!ClientDB.users.some(u => u.role === 'admin' && u.mobile === '7003902225')) {
+            ClientDB.users.push({ id: 'adm1', name: 'Atanu Dutta', mobile: '7003902225', countryCode: '+91', password: 'Atanu@123', role: 'admin', joinDate: '2025-01-01' });
+            db.ref('users').set(ClientDB.users);
+          }
+        }
+        
         EventBus.emit(key + '_changed');
       });
     });
@@ -2747,91 +2760,7 @@
       return [data, setAndBroadcast];
     }
 
-    /* Default seed — admin only, no demo for students */
-    (() => {
-      /* ── MIGRATION: email → mobile ── */
-      const users = DB.get('users', []);
-      let migrated = false;
-      users.forEach(u => {
-        if (u.email && !u.mobile) {
-          /* Extract digits from email prefix as fallback mobile */
-          const digits = (u.email.match(/\d+/g) || []).join('');
-          u.mobile = digits.length >= 7 ? digits.slice(0, 10) : '0000000000';
-          u.countryCode = '+91';
-          migrated = true;
-        }
-      });
-      if (migrated) DB.set('users', users);
 
-      // Ensure admin exists
-      if (!users.some(u => u.role === 'admin' && u.mobile === '7003902225')) {
-        const existing = users.findIndex(u => u.role === 'admin' && u.email === 'atanu@gmail.com');
-        if (existing >= 0) { users[existing].mobile = '7003902225'; users[existing].countryCode = '+91'; }
-        else users.push({ id: 'adm1', name: 'Atanu Dutta', mobile: '7003902225', countryCode: '+91', password: 'Atanu@123', role: 'admin', joinDate: '2025-01-01' });
-        DB.set('users', users);
-      }
-
-      if (!DB.get('inited')) {
-        DB.set('exams', [
-          {
-            id: 'e1', title: 'JEE Main Mock 2025', description: 'Full syllabus mock covering Physics, Chemistry & Mathematics. Strictly follows NTA JEE Main pattern.',
-            duration: 180,
-            sections: [
-              { id: 's1', name: 'Physics', color: '#2563eb', bgColor: '#dbeafe' },
-              { id: 's2', name: 'Chemistry', color: '#059669', bgColor: '#d1fae5' },
-              { id: 's3', name: 'Mathematics', color: '#dc2626', bgColor: '#fee2e2' }
-            ],
-            markingScheme: { mcq: { correct: 4, wrong: -1 }, msq: { correct: 4, wrong: 0, partial: true }, numerical: { correct: 4, wrong: 0 } },
-            status: 'active', tags: ['JEE', 'Full Length', '2025'],
-            instructions: 'Read carefully. MCQ: one correct. MSQ: one or more correct. Numerical: enter value. No negative marking for numerical.'
-          }
-        ]);
-        DB.set('questions', [
-          {
-            id: 'q1', examId: 'e1', sectionId: 's1', type: 'mcq', num: 1,
-            text: 'A particle moves in a circle of radius $R = 5\\,\\text{m}$ with constant speed. If the centripetal acceleration is $a_c = 20\\,\\text{m/s}^2$, the angular velocity $\\omega$ is:',
-            options: ['$\\omega = 2\\,\\text{rad/s}$', '$\\omega = 4\\,\\text{rad/s}$', '$\\omega = 5\\,\\text{rad/s}$', '$\\omega = 10\\,\\text{rad/s}$'],
-            correct: 0, difficulty: 'medium',
-            explanation: `**Given:** $R = 5\\,\\text{m}$, $a_c = 20\\,\\text{m/s}^2$\n\n**Formula:** $$a_c = \\omega^2 R$$\n\n**Solving for $\\omega$:**\n$$\\omega^2 = \\frac{a_c}{R} = \\frac{20}{5} = 4 \\implies \\boxed{\\omega = 2\\,\\text{rad/s}}$$`
-          },
-          {
-            id: 'q2', examId: 'e1', sectionId: 's1', type: 'numerical', num: 2,
-            text: 'A stone is thrown horizontally from height $H = 80\\,\\text{m}$ with $u = 20\\,\\text{m/s}$. Find time (in seconds) to reach ground. Take $g = 10\\,\\text{m/s}^2$.',
-            correct: 4, difficulty: 'easy',
-            explanation: `**Vertical motion (starts from rest vertically):**\n$$H = \\frac{1}{2}g t^2 \\implies 80 = \\frac{1}{2}(10)t^2$$\n$$t^2 = 16 \\implies \\boxed{t = 4\\,\\text{s}}$$\n\n*Horizontal motion does not affect vertical fall time.*`
-          },
-          {
-            id: 'q3', examId: 'e1', sectionId: 's1', type: 'msq', num: 3,
-            text: 'For SHM $x = A\\sin(\\omega t + \\phi)$, which statements are **CORRECT**?',
-            options: ['Total energy $E = \\frac{1}{2}kA^2$ is constant', 'Velocity is maximum at $x = 0$', 'Acceleration is maximum at $x = \\pm A$', 'Time period depends on amplitude'],
-            correct: [0, 1, 2], difficulty: 'hard',
-            explanation: `**(A) ✓** $E = \\frac{1}{2}kA^2 = \\text{const}$ — energy conserved.\n\n**(B) ✓** $v = \\omega\\sqrt{A^2-x^2}$ is max at $x=0$.\n\n**(C) ✓** $a = -\\omega^2 x$, so max at $x = \\pm A$.\n\n**(D) ✗** Period $T = 2\\pi/\\omega$ is **independent** of amplitude.`
-          },
-          {
-            id: 'q4', examId: 'e1', sectionId: 's2', type: 'mcq', num: 1,
-            text: 'The IUPAC name of $\\text{CH}_3\\text{CH(OH)CH}_2\\text{COOH}$ is:',
-            options: ['3-Hydroxybutanoic acid', '2-Methylmalonic acid', '$\\beta$-Hydroxybutyric acid', '2-Hydroxybutanoic acid'],
-            correct: 0, difficulty: 'easy',
-            explanation: `Longest chain = 4C → **but**anoic acid. $-\\text{OH}$ at C3 → **3-hydroxy**. IUPAC: $$\\boxed{\\text{3-Hydroxybutanoic acid}}$$`
-          },
-          {
-            id: 'q5', examId: 'e1', sectionId: 's3', type: 'mcq', num: 1,
-            text: 'The value of $\\displaystyle\\int_0^{\\pi} \\sin x\\,dx$ is:',
-            options: ['$0$', '$1$', '$2$', '$\\pi$'],
-            correct: 2, difficulty: 'easy',
-            explanation: `$$\\int_0^{\\pi} \\sin x\\,dx = \\Big[-\\cos x\\Big]_0^{\\pi} = (-\\cos\\pi)-(-\\cos 0) = 1+1 = \\boxed{2}$$`
-          },
-          {
-            id: 'q6', examId: 'e1', sectionId: 's3', type: 'numerical', num: 2,
-            text: 'If $z = 3 + 4i$, find $|z|^2$.',
-            correct: 25, difficulty: 'easy',
-            explanation: `$|z| = \\sqrt{3^2+4^2} = \\sqrt{9+16} = 5$ \\\\\n$$\\boxed{|z|^2 = 25}$$`
-          },
-        ]);
-        DB.set('attempts', []);
-        DB.set('inited', true);
-      }
-    })();
 
     /* ══════ NOTIFICATION ═══════════════════════════════════════════════════ */
     const NC = React.createContext(null);
