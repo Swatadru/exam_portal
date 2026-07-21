@@ -14,6 +14,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
     *,
     *::before,
@@ -2618,135 +2621,99 @@
 
 
     /* ══════ STORAGE ════════════════════════════════════════════════════════ */
-    const DB = {
-      get(k, d = null) { try { const v = localStorage.getItem('cb_' + k); return v ? JSON.parse(v) : d } catch { return d } },
-      set(k, v) {
-        try {
-          localStorage.setItem('cb_' + k, JSON.stringify(v));
-        } catch (e) {
-          /* Phase 2 — Bug #5: localStorage quota exhaustion detection */
-          if (e.name === 'QuotaExceededError' || e.code === 22) {
-            console.error('[DB] localStorage quota exceeded for key:', k);
-            /* Attempt to prune old malpractice logs to free space */
-            try {
-              const logs = JSON.parse(localStorage.getItem('cb_malpractice_logs') || '[]');
-              if (logs.length > 10) {
-                localStorage.setItem('cb_malpractice_logs', JSON.stringify(logs.slice(-10)));
-                /* Retry the original write */
-                localStorage.setItem('cb_' + k, JSON.stringify(v));
-                return;
-              }
-            } catch { }
-          }
-        }
-      },
-      /* Phase 2 — Bug #7: Concurrent-write-safe array append with dedup by id */
-      appendToArray(k, item) {
-        const current = this.get(k, []);
-        if (item.id && current.some(x => x.id === item.id)) return; /* dedup */
-        this.set(k, [...current, item]);
-      },
-      /* Phase 2 — Bug #5: Quota monitoring */
-      quota() {
-        let used = 0;
-        try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); used += (localStorage.getItem(k) || '').length; } } catch { }
-        return { usedBytes: used * 2, limitBytes: 5 * 1024 * 1024, pct: Math.round((used * 2) / (5 * 1024 * 1024) * 100) };
-      }
+    /* ══════ STORAGE & REAL-TIME SYNC (Firebase Migration) ════════════ */
+    const firebaseConfig = {
+      apiKey: "AIzaSyDbfFN6BSKW6dxn197xL0VCft9XBePwYBE",
+      authDomain: "chhatrobondhuexamportal.firebaseapp.com",
+      databaseURL: "https://chhatrobondhuexamportal-default-rtdb.firebaseio.com",
+      projectId: "chhatrobondhuexamportal",
+      storageBucket: "chhatrobondhuexamportal.firebasestorage.app",
+      messagingSenderId: "183030169204",
+      appId: "1:183030169204:web:d37d38e0a24ae28fab1b21",
+      measurementId: "G-PKNRK91FL6"
     };
 
-    /* ══════ INDEXED DB (for large files) ══════════════════════════════════ */
-    const IDB = {
-      dbName: 'cb_files', storeName: 'images', db: null,
-      async open() {
-        if (this.db) return this.db;
-        return new Promise((resolve, reject) => {
-          const r = indexedDB.open(this.dbName, 1);
-          r.onupgradeneeded = (e) => { e.target.result.createObjectStore(this.storeName); };
-          r.onsuccess = (e) => { this.db = e.target.result; resolve(this.db); };
-          r.onerror = (e) => reject(e.target.error);
-        });
-      },
-      async get(id) {
-        if (!id) return null;
-        const db = await this.open();
-        return new Promise((resolve, reject) => {
-          const t = db.transaction(this.storeName, 'readonly');
-          const r = t.objectStore(this.storeName).get(id);
-          r.onsuccess = () => resolve(r.result);
-          r.onerror = () => reject(r.error);
-        });
-      },
-      async set(id, val) {
-        if (!id) return;
-        const db = await this.open();
-        return new Promise((resolve, reject) => {
-          const t = db.transaction(this.storeName, 'readwrite');
-          const r = t.objectStore(this.storeName).put(val, id);
-          r.onsuccess = () => resolve();
-          r.onerror = () => reject(r.error);
-        });
-      },
-      async del(id) {
-        if (!id) return;
-        const db = await this.open();
-        return new Promise((resolve, reject) => {
-          const t = db.transaction(this.storeName, 'readwrite');
-          const r = t.objectStore(this.storeName).delete(id);
-          r.onsuccess = () => resolve();
-          r.onerror = () => reject(r.error);
-        });
-      }
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    // Master local state cache
+    const ClientDB = {
+      users: [], exams: [], questions: [], attempts: [], malpractice_logs: []
     };
 
-    const uid = () => Math.random().toString(36).slice(2, 10);
-
-    /* ══════ PHASE 1: CROSS-TAB EVENT BUS ══════════════════════════════════
-       Dual-channel real-time sync layer:
-       1. BroadcastChannel (primary) — instant cross-tab messaging
-       2. window.storage event (fallback) — fires when another tab writes localStorage
-       Resolves Bug #1 (Admin→Student) and Bug #2 (Student→Admin) state stagnation.
-    ═══════════════════════════════════════════════════════════════════════ */
+    /* ══════ EVENT BUS (In-memory reactivity) ═══════════════════════════════ */
     const EventBus = (() => {
       const listeners = {};
-      let bc = null;
-      try { bc = new BroadcastChannel('cb_exam_portal'); } catch { }
-
-      /* Receive from other tabs via BroadcastChannel */
-      if (bc) {
-        bc.onmessage = (e) => {
-          const { channel, data } = e.data || {};
-          if (channel && listeners[channel]) {
-            listeners[channel].forEach(fn => { try { fn(data); } catch (err) { console.error('[EventBus]', err); } });
-          }
-        };
-      }
-
-      /* Fallback: listen for storage events from other tabs */
-      window.addEventListener('storage', (e) => {
-        if (!e.key || !e.key.startsWith('cb_')) return;
-        const channel = e.key.replace('cb_', '') + '_changed';
-        if (listeners[channel]) {
-          listeners[channel].forEach(fn => { try { fn(); } catch (err) { console.error('[EventBus storage]', err); } });
-        }
-      });
-
       return {
-        /** Emit an event to all other tabs */
         emit(channel, data = null) {
-          if (bc) { try { bc.postMessage({ channel, data }); } catch { } }
-          /* Also notify listeners in THIS tab (for same-tab reactivity) */
           if (listeners[channel]) {
             listeners[channel].forEach(fn => { try { fn(data); } catch { } });
           }
         },
-        /** Subscribe to an event channel. Returns unsubscribe function. */
         on(channel, fn) {
           if (!listeners[channel]) listeners[channel] = [];
           listeners[channel].push(fn);
           return () => { listeners[channel] = (listeners[channel] || []).filter(f => f !== fn); };
+        },
+        off(channel, fn) {
+          if (listeners[channel]) {
+            listeners[channel] = listeners[channel].filter(f => f !== fn);
+          }
         }
       };
     })();
+
+    // Listen to collections
+    const collections = ['users', 'exams', 'questions', 'attempts', 'malpractice_logs'];
+    collections.forEach(key => {
+      db.ref(key).on('value', (snapshot) => {
+        ClientDB[key] = snapshot.val() || [];
+        EventBus.emit(key + '_changed');
+      });
+    });
+
+    // Connection status monitor
+    db.ref('.info/connected').on('value', (snap) => {
+      EventBus.emit('connection_changed', snap.val() === true);
+    });
+
+    const DB = {
+      get(k, d = null) { return ClientDB[k] || d; },
+      set(k, v) {
+        ClientDB[k] = v;
+        db.ref(k).set(v);
+        EventBus.emit(k + '_changed');
+      },
+      appendToArray(k, item) {
+        if (!ClientDB[k]) ClientDB[k] = [];
+        if (item.id) {
+          const idx = ClientDB[k].findIndex(x => x.id === item.id);
+          if (idx >= 0) ClientDB[k][idx] = item; else ClientDB[k].push(item);
+        } else {
+          ClientDB[k].push(item);
+        }
+        db.ref(k).set(ClientDB[k]);
+        EventBus.emit(k + '_changed');
+      },
+      quota() { return { usedBytes: 0, limitBytes: 500000000, pct: 0 }; } 
+    };
+
+    /* ══════ INDEXED DB (Now backed by Firebase Realtime DB) ═══════════════ */
+    const IDB = {
+      async get(id) {
+        if (!id) return null;
+        const snap = await db.ref('files/' + id).once('value');
+        return snap.val();
+      },
+      async set(id, val) {
+        if (!id) return;
+        return db.ref('files/' + id).set(val);
+      },
+      async del(id) {
+        if (!id) return;
+        return db.ref('files/' + id).remove();
+      }
+    };
 
     /* ══════ useLiveData HOOK ══════════════════════════════════════════════
        Reactive localStorage reader that auto-updates when any tab
@@ -5150,6 +5117,22 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
       );
     }
 
+    /* ══════ CONNECTION STATUS ══════════════════════════════════════════════ */
+    function ConnectionStatus() {
+      const [connected, setConnected] = useState(false);
+      useEffect(() => {
+        const fn = (status) => setConnected(status);
+        EventBus.on('connection_changed', fn);
+        return () => EventBus.off('connection_changed', fn);
+      }, []);
+      
+      if (connected) {
+         return <div style={{display:'flex',alignItems:'center',gap:6,color:'#10b981',fontSize:12,marginRight:15}}><div style={{width:8,height:8,borderRadius:'50%',background:'#10b981'}}></div>Connected</div>;
+      } else {
+         return <div style={{display:'flex',alignItems:'center',gap:6,color:'#ef4444',fontSize:12,marginRight:15}}><div style={{width:8,height:8,borderRadius:'50%',background:'#ef4444'}}></div>Offline</div>;
+      }
+    }
+
     /* ══════ ROOT APP ════════════════════════════════════════════════════════ */
     function App() {
       const [view, setView] = useState('auth');
@@ -5253,6 +5236,7 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
             <div className="tbar-sep" />
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,.7)' }}>{topbarTitle()}</span>
             <div className="tbar-r">
+              <ConnectionStatus />
               <div className="tbar-user">
                 <div className="tbar-av">{user?.name?.charAt(0).toUpperCase()}</div>
                 <span>{user?.name}</span>
