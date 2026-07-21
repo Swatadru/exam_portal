@@ -2809,7 +2809,7 @@
       };
 
       const login = () => {
-        const mobileVal = (f.mobile || '').replace(/\D/g, '');
+        const mobileVal = String(f.mobile || '').replace(/\D/g, '');
         const ccVal = f.countryCode;
         const passVal = f.password || '';
         if (!mobileVal || !passVal) { setErr('Please enter your mobile number and password.'); return; }
@@ -2817,37 +2817,46 @@
         if (mErr) { setErr(mErr); return; }
         setErr(''); setBusy(true);
         setTimeout(() => {
-          const allUsers = DB.get('users', []);
-          const u = allUsers.find(x => (x.mobile || '').replace(/\D/g, '') === mobileVal && (x.countryCode || '+91') === ccVal && (x.password || '') === passVal);
-          if (u) {
-            notify('Welcome back, ' + u.name + '!', 's'); onLogin(u);
-          } else {
-            setErr('Invalid mobile number or password. Please try again.');
+          try {
+            const allUsers = DB.get('users', []);
+            const u = allUsers.find(x => String(x.mobile || '').replace(/\D/g, '') === mobileVal && (x.countryCode || '+91') === ccVal && String(x.password || '') === passVal);
+            if (u) {
+              notify('Welcome back, ' + u.name + '!', 's'); onLogin(u);
+            } else {
+              setErr('Invalid mobile number or password. Please try again.');
+            }
+          } catch (e) {
+            setErr('System error: ' + e.message);
+          } finally {
+            setBusy(false);
           }
-          setBusy(false);
         }, 350);
       };
 
       const register = () => {
         setErr('');
         const nameVal = f.name.trim();
-        const mobileVal = (f.mobile || '').replace(/\D/g, '');
+        const mobileVal = String(f.mobile || '').replace(/\D/g, '');
         const ccVal = f.countryCode;
-        const passVal = f.password;
+        const passVal = f.password || '';
         if (!nameVal || !mobileVal || !passVal.trim()) { setErr('All fields are required.'); return; }
         const mErr = validateMobile(mobileVal, ccVal);
         if (mErr) { setErr(mErr); return; }
         if (passVal.length < 6) { setErr('Password must be at least 6 characters.'); return; }
-        const users = DB.get('users', []);
-        if (users.find(u => (u.mobile || '').replace(/\D/g, '') === mobileVal && (u.countryCode || '+91') === ccVal)) { setErr('This mobile number is already registered.'); return; }
-        const nu = { id: uid(), name: nameVal, mobile: mobileVal, countryCode: ccVal, password: passVal, role: 'student', joinDate: new Date().toISOString().slice(0, 10) };
-        const updatedUsers = [...users, nu];
-        DB.set('users', updatedUsers);
-        EventBus.emit('users_changed');
-        const saved = DB.get('users', []);
-        if (!saved.find(u => u.mobile === mobileVal)) { setErr('Registration failed — storage error. Please try again.'); return; }
-        notify('Account created! Welcome, ' + nu.name, 's');
-        onLogin(nu);
+        try {
+          const users = DB.get('users', []);
+          if (users.find(u => String(u.mobile || '').replace(/\D/g, '') === mobileVal && (u.countryCode || '+91') === ccVal)) { setErr('This mobile number is already registered.'); return; }
+          const nu = { id: uid(), name: nameVal, mobile: mobileVal, countryCode: ccVal, password: passVal, role: 'student', joinDate: new Date().toISOString().slice(0, 10) };
+          const updatedUsers = [...users, nu];
+          DB.set('users', updatedUsers);
+          EventBus.emit('users_changed');
+          const saved = DB.get('users', []);
+          if (!saved.find(u => u.mobile === mobileVal)) { setErr('Registration failed — storage error. Please try again.'); return; }
+          notify('Account created! Welcome, ' + nu.name, 's');
+          onLogin(nu);
+        } catch (e) {
+          setErr('System error: ' + e.message);
+        }
       };
 
       const formatMobileDisplay = (val) => {
