@@ -2673,6 +2673,9 @@
         if (!Array.isArray(val) && typeof val === 'object') {
           val = Object.values(val); // Convert Firebase object-arrays back to real arrays
         }
+        if (Array.isArray(val)) {
+          val = val.filter(Boolean); // Remove nulls from sparse arrays
+        }
         ClientDB[key] = val;
         
         // Safely ensure admin exists after we fetch the real users array from Firebase
