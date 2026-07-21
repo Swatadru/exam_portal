@@ -2693,8 +2693,10 @@
     });
 
     // Connection status monitor
+    let isConnectedToFirebase = false;
     db.ref('.info/connected').on('value', (snap) => {
-      EventBus.emit('connection_changed', snap.val() === true);
+      isConnectedToFirebase = snap.val() === true;
+      EventBus.emit('connection_changed', isConnectedToFirebase);
     });
 
     const DB = {
@@ -5064,8 +5066,9 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
 
     /* ══════ CONNECTION STATUS ══════════════════════════════════════════════ */
     function ConnectionStatus() {
-      const [connected, setConnected] = useState(false);
+      const [connected, setConnected] = useState(isConnectedToFirebase);
       useEffect(() => {
+        setConnected(isConnectedToFirebase);
         const fn = (status) => setConnected(status);
         EventBus.on('connection_changed', fn);
         return () => EventBus.off('connection_changed', fn);
