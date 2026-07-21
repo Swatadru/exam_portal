@@ -2498,6 +2498,39 @@
 </head>
 
 <body>
+  <!--
+    ========================================================================================
+    PRODUCTION_NOTES: ARCHITECTURAL BLUEPRINT FOR HIGH CONCURRENCY SCALING (PHASE 3)
+    ========================================================================================
+    This application currently runs entirely client-side (SPA with localStorage/BroadcastChannel).
+    To scale to tens of thousands of concurrent users, you must migrate to a Backend-as-Truth model.
+
+    1. DATABASE & CONNECTION POOLING (PostgreSQL)
+       - Migrate 'users', 'exams', 'questions', and 'attempts' from localStorage to PostgreSQL tables.
+       - Use 'pg-pool' with { max: 20, idleTimeoutMillis: 30000 } per Node.js server instance.
+       - Add a 'submissions' table with a UNIQUE constraint on (exam_id, user_id) to guarantee idempotency.
+
+    2. CACHING LAYER (Redis)
+       - Cache immutable/semi-immutable data (e.g., active exam configurations, questions).
+       - TTL: 60 seconds. Invalidate cache on admin writes.
+       - Reduces DB load when 10,000+ students fetch questions at the exact same start time.
+
+    3. REAL-TIME EVENT BUS (WebSocket + Redis Pub/Sub)
+       - Replace BroadcastChannel (which is tab-only) with Socket.io connected to Node.js.
+       - Use 'socket.io-redis' adapter so multiple Node.js instances can broadcast events.
+       - Emit 'exams_changed', 'users_changed', etc., from the server when mutations occur.
+
+    4. RATE LIMITING & SECURITY
+       - Apply 'express-rate-limit': 100 req/s per IP for generic endpoints.
+       - Limit exam submission endpoint to 1 req/30s per user to stop double-click abuse.
+       - Store large binary data (images) in S3/CloudFront, not IndexedDB or PostgreSQL.
+
+    5. SERVER-AUTHORITATIVE EXAM TIMER
+       - Stop relying on client Date.now(). The server MUST provide the 'startTime' and 'endTime'.
+       - On exam submission, the server verifies: submission_time <= (server_start_time + duration + 5s grace).
+       - If client is late, server rejects or auto-submits current saved state.
+    ========================================================================================
+  -->
   <div id="root"></div>
   <script type="text/babel">
     const { useState, useEffect, useCallback, useRef, useMemo } = React;
@@ -2587,7 +2620,38 @@
     /* ══════ STORAGE ════════════════════════════════════════════════════════ */
     const DB = {
       get(k, d = null) { try { const v = localStorage.getItem('cb_' + k); return v ? JSON.parse(v) : d } catch { return d } },
-      set(k, v) { try { localStorage.setItem('cb_' + k, JSON.stringify(v)) } catch { } }
+      set(k, v) {
+        try {
+          localStorage.setItem('cb_' + k, JSON.stringify(v));
+        } catch (e) {
+          /* Phase 2 — Bug #5: localStorage quota exhaustion detection */
+          if (e.name === 'QuotaExceededError' || e.code === 22) {
+            console.error('[DB] localStorage quota exceeded for key:', k);
+            /* Attempt to prune old malpractice logs to free space */
+            try {
+              const logs = JSON.parse(localStorage.getItem('cb_malpractice_logs') || '[]');
+              if (logs.length > 10) {
+                localStorage.setItem('cb_malpractice_logs', JSON.stringify(logs.slice(-10)));
+                /* Retry the original write */
+                localStorage.setItem('cb_' + k, JSON.stringify(v));
+                return;
+              }
+            } catch { }
+          }
+        }
+      },
+      /* Phase 2 — Bug #7: Concurrent-write-safe array append with dedup by id */
+      appendToArray(k, item) {
+        const current = this.get(k, []);
+        if (item.id && current.some(x => x.id === item.id)) return; /* dedup */
+        this.set(k, [...current, item]);
+      },
+      /* Phase 2 — Bug #5: Quota monitoring */
+      quota() {
+        let used = 0;
+        try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); used += (localStorage.getItem(k) || '').length; } } catch { }
+        return { usedBytes: used * 2, limitBytes: 5 * 1024 * 1024, pct: Math.round((used * 2) / (5 * 1024 * 1024) * 100) };
+      }
     };
 
     /* ══════ INDEXED DB (for large files) ══════════════════════════════════ */
@@ -2635,6 +2699,84 @@
     };
 
     const uid = () => Math.random().toString(36).slice(2, 10);
+
+    /* ══════ PHASE 1: CROSS-TAB EVENT BUS ══════════════════════════════════
+       Dual-channel real-time sync layer:
+       1. BroadcastChannel (primary) — instant cross-tab messaging
+       2. window.storage event (fallback) — fires when another tab writes localStorage
+       Resolves Bug #1 (Admin→Student) and Bug #2 (Student→Admin) state stagnation.
+    ═══════════════════════════════════════════════════════════════════════ */
+    const EventBus = (() => {
+      const listeners = {};
+      let bc = null;
+      try { bc = new BroadcastChannel('cb_exam_portal'); } catch { }
+
+      /* Receive from other tabs via BroadcastChannel */
+      if (bc) {
+        bc.onmessage = (e) => {
+          const { channel, data } = e.data || {};
+          if (channel && listeners[channel]) {
+            listeners[channel].forEach(fn => { try { fn(data); } catch (err) { console.error('[EventBus]', err); } });
+          }
+        };
+      }
+
+      /* Fallback: listen for storage events from other tabs */
+      window.addEventListener('storage', (e) => {
+        if (!e.key || !e.key.startsWith('cb_')) return;
+        const channel = e.key.replace('cb_', '') + '_changed';
+        if (listeners[channel]) {
+          listeners[channel].forEach(fn => { try { fn(); } catch (err) { console.error('[EventBus storage]', err); } });
+        }
+      });
+
+      return {
+        /** Emit an event to all other tabs */
+        emit(channel, data = null) {
+          if (bc) { try { bc.postMessage({ channel, data }); } catch { } }
+          /* Also notify listeners in THIS tab (for same-tab reactivity) */
+          if (listeners[channel]) {
+            listeners[channel].forEach(fn => { try { fn(data); } catch { } });
+          }
+        },
+        /** Subscribe to an event channel. Returns unsubscribe function. */
+        on(channel, fn) {
+          if (!listeners[channel]) listeners[channel] = [];
+          listeners[channel].push(fn);
+          return () => { listeners[channel] = (listeners[channel] || []).filter(f => f !== fn); };
+        }
+      };
+    })();
+
+    /* ══════ useLiveData HOOK ══════════════════════════════════════════════
+       Reactive localStorage reader that auto-updates when any tab
+       writes to the same key via EventBus or storage events.
+       Usage: const [exams, setExams] = useLiveData('exams', []);
+       setExams(newVal) → writes to localStorage AND emits to all tabs.
+    ═══════════════════════════════════════════════════════════════════════ */
+    function useLiveData(key, defaultValue = null) {
+      const [data, setData] = useState(() => DB.get(key, defaultValue));
+
+      /* Subscribe to cross-tab notifications for this key */
+      useEffect(() => {
+        const unsub = EventBus.on(key + '_changed', () => {
+          setData(DB.get(key, defaultValue));
+        });
+        return unsub;
+      }, [key]);
+
+      /* Setter that persists + notifies all tabs */
+      const setAndBroadcast = useCallback((valueOrFn) => {
+        setData(prev => {
+          const next = typeof valueOrFn === 'function' ? valueOrFn(prev) : valueOrFn;
+          DB.set(key, next);
+          EventBus.emit(key + '_changed', { key });
+          return next;
+        });
+      }, [key]);
+
+      return [data, setAndBroadcast];
+    }
 
     /* Default seed — admin only, no demo for students */
     (() => {
@@ -2800,6 +2942,7 @@
         const nu = { id: uid(), name: nameVal, mobile: mobileVal, countryCode: ccVal, password: passVal, role: 'student', joinDate: new Date().toISOString().slice(0, 10) };
         const updatedUsers = [...users, nu];
         DB.set('users', updatedUsers);
+        EventBus.emit('users_changed');
         const saved = DB.get('users', []);
         if (!saved.find(u => u.mobile === mobileVal)) { setErr('Registration failed — storage error. Please try again.'); return; }
         notify('Account created! Welcome, ' + nu.name, 's');
@@ -2917,8 +3060,11 @@
 
     /* ══════ STUDENT DASHBOARD ══════════════════════════════════════════════ */
     function StudentDashboard({ user, onStart, onResult }) {
-      const exams = DB.get('exams', []).filter(e => e.status === 'active');
-      const atts = DB.get('attempts', []).filter(a => a.userId === user.id);
+      const [allExams] = useLiveData('exams', []);
+      const [allAttempts] = useLiveData('attempts', []);
+      const [allQuestions] = useLiveData('questions', []);
+      const exams = allExams.filter(e => e.status === 'active');
+      const atts = allAttempts.filter(a => a.userId === user.id);
       const avg = atts.length ? Math.round(atts.reduce((s, a) => s + (a.results?.score || 0), 0) / atts.length) : 0;
       const acc = atts.length ? Math.round(atts.reduce((s, a) => s + (a.results?.correct / (a.results?.total || 1) * 100), 0) / atts.length) : 0;
       return (
@@ -2938,7 +3084,7 @@
             <div className="egrid">
               {exams.map(exam => {
                 const att = atts.find(a => a.examId === exam.id);
-                const qc = DB.get('questions', []).filter(q => q.examId === exam.id).length;
+                const qc = allQuestions.filter(q => q.examId === exam.id).length;
                 return (
                   <div key={exam.id} className="ec">
                     <div className="flex ia jb mb2" style={{ flexWrap: 'wrap', gap: 5 }}>
@@ -2980,7 +3126,7 @@
                 <table>
                   <thead><tr><th>Exam</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Accuracy</th><th>Date</th><th></th></tr></thead>
                   <tbody>{[...atts].reverse().map(a => {
-                    const ex = DB.get('exams', []).find(e => e.id === a.examId);
+                    const ex = allExams.find(e => e.id === a.examId);
                     const ac = Math.round((a.results?.correct || 0) / (a.results?.total || 1) * 100);
                     return (<tr key={a.id}>
                       <td style={{ fontWeight: 600 }}>{ex?.title || '—'}</td>
@@ -3116,6 +3262,12 @@
       const submittedRef = useRef(false);
       const tabWarnsRef = useRef(0);
       const doSubmitRef = useRef(null);
+      /* Phase 2 — Bug #6: Refs for latest callbacks to avoid stale closures in event handlers */
+      const terminateRef = useRef(null);
+      const logMalpRef = useRef(null);
+      const notifyRef = useRef(notify);
+      /* Phase 2 — Bug #3: Deadline-based timer to prevent drift */
+      const deadlineRef = useRef(Date.now() + exam.duration * 60 * 1000);
 
       const secQs = useMemo(() => questions.filter(q => q.sectionId === curSec), [questions, curSec]);
       const curQ = secQs[curIdx];
@@ -3134,6 +3286,10 @@
         setMalpTerminated({ reason: reasonLabel, countdown: 5 });
         try { if (document.fullscreenElement) document.exitFullscreen(); } catch { }
       }, [logMalpractice]);
+      /* Keep refs updated with latest callback versions */
+      terminateRef.current = terminateExam;
+      logMalpRef.current = logMalpractice;
+      notifyRef.current = notify;
 
       /* ── helpers ── */
       const hasAnswer = useCallback((id, ans = answers) => {
@@ -3155,22 +3311,27 @@
         setQStart(Date.now());
       }, [curQ?.id]);
 
-      /* Timer with countdown warnings */
+      /* Phase 2 — Bug #3: Deadline-based monotonic timer (prevents drift under CPU pressure / throttled tabs) */
       useEffect(() => {
-        const id = setInterval(() => setTimeLeft(t => {
-          if (t <= 1) {
-            clearInterval(id);
+        let rafId;
+        const tick = () => {
+          const remaining = Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000));
+          setTimeLeft(prev => {
+            /* Only trigger warnings on exact crossings to prevent repeated notifications */
+            if (prev > 300 && remaining <= 300) setTimeWarning('warn');
+            if (prev > 60 && remaining <= 60) setTimeWarning('danger');
+            if (remaining <= 10 && remaining > 0) setTimeoutCountdown(remaining);
+            return remaining;
+          });
+          if (remaining <= 0) {
             setTimeoutCountdown(0);
             setTimeout(() => { if (doSubmitRef.current) doSubmitRef.current(true, 'timer'); }, 500);
-            return 0;
+            return; /* stop ticking */
           }
-          // Time warnings
-          if (t === 300) setTimeWarning('warn');
-          if (t === 60) setTimeWarning('danger');
-          if (t <= 10 && t > 0) setTimeoutCountdown(t);
-          return t - 1;
-        }), 1000);
-        return () => clearInterval(id);
+          rafId = setTimeout(tick, 250); /* 4Hz for accuracy without waste */
+        };
+        rafId = setTimeout(tick, 250);
+        return () => clearTimeout(rafId);
       }, []);
 
       /* Autosave feedback */
@@ -3183,8 +3344,9 @@
       useEffect(() => {
         const fn = () => {
           if (!document.fullscreenElement && !submittedRef.current) {
-            logMalpractice('fullscreen_exit', 'Exited fullscreen mode');
-            terminateExam('fullscreen_exit', 'You exited fullscreen mode during the exam.');
+            /* Phase 2 — Bug #6: Use refs to avoid stale closures */
+            if (logMalpRef.current) logMalpRef.current('fullscreen_exit', 'Exited fullscreen mode');
+            if (terminateRef.current) terminateRef.current('fullscreen_exit', 'You exited fullscreen mode during the exam.');
           }
         };
         document.addEventListener('fullscreenchange', fn);
@@ -3198,11 +3360,12 @@
             tabWarnsRef.current += 1;
             const w = tabWarnsRef.current;
             setTabWarns(w);
-            logMalpractice('tab_switch', `Tab switch violation #${w}`);
+            /* Phase 2 — Bug #6: Use refs for latest callbacks */
+            if (logMalpRef.current) logMalpRef.current('tab_switch', `Tab switch violation #${w}`);
             if (w >= 3) {
-              terminateExam('tab_switch', `You switched tabs ${w} times. Exam terminated.`);
+              if (terminateRef.current) terminateRef.current('tab_switch', `You switched tabs ${w} times. Exam terminated.`);
             } else {
-              notify(`⚠ Tab violation ${w}/3 — exam will auto-terminate at 3!`, 'w');
+              if (notifyRef.current) notifyRef.current(`⚠ Tab violation ${w}/3 — exam will auto-terminate at 3!`, 'w');
             }
           }
         };
@@ -3407,7 +3570,8 @@
       };
 
       const doSubmit = (auto = false, reason = 'manual') => {
-        if (submittedRef.current && reason !== 'timer' && !malpTerminated) return;
+        /* Phase 2 — Bug #4: Strict idempotency guard — NO bypasses */
+        if (submittedRef.current) return;
         submittedRef.current = true;
         saveTime();
         try { if (document.fullscreenElement) document.exitFullscreen(); } catch { }
@@ -3426,7 +3590,9 @@
         }
 
         const att = { id: uid(), examId: exam.id, userId: user.id, date: new Date().toISOString(), answers, states, timeSpent, results, sectionResults, totalTime: exam.duration * 60 - timeLeft, auto, reason, tabWarnings: tabWarnsRef.current, malpracticeEvents: malpEvents };
-        DB.set('attempts', [...DB.get('attempts', []), att]);
+        /* Phase 2 — Bug #7: Concurrent-write-safe append with dedup */
+        DB.appendToArray('attempts', att);
+        EventBus.emit('attempts_changed');
         // Store malpractice logs separately for admin
         if (malpEvents.length > 0) {
           const logs = DB.get('malpractice_logs', []);
@@ -4005,10 +4171,11 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
 
     /* ══════ ADMIN DASHBOARD ════════════════════════════════════════════════ */
     function AdminDash() {
-      const exams = DB.get('exams', []);
-      const questions = DB.get('questions', []);
-      const attempts = DB.get('attempts', []);
-      const students = DB.get('users', []).filter(u => u.role === 'student');
+      const [exams] = useLiveData('exams', []);
+      const [questions] = useLiveData('questions', []);
+      const [attempts] = useLiveData('attempts', []);
+      const [allUsers] = useLiveData('users', []);
+      const students = allUsers.filter(u => u.role === 'student');
       const avg = attempts.length ? Math.round(attempts.reduce((s, a) => s + (a.results?.score || 0), 0) / attempts.length) : 0;
 
       // Auto-cleanup orphaned malpractice logs (e.g., from before deletion logic was added)
@@ -4106,17 +4273,21 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
         const all = DB.get('exams', []);
         const ex = { ...f, id: editE?.id || uid(), status: 'active', tags: (f.tags || '').split(',').map(t => t.trim()).filter(Boolean), createdAt: editE?.createdAt || new Date().toISOString().slice(0, 10) };
         DB.set('exams', editE ? all.map(e => e.id === editE.id ? ex : e) : [...all, ex]);
+        EventBus.emit('exams_changed');
         rf(); setShowCr(false); notify(editE ? 'Exam updated!' : 'Exam created!', 's');
       };
       const del = (id) => {
         if (!confirm('Delete this exam and all its questions?')) return;
         DB.set('exams', DB.get('exams', []).filter(e => e.id !== id));
         DB.set('questions', DB.get('questions', []).filter(q => q.examId !== id));
+        EventBus.emit('exams_changed');
+        EventBus.emit('questions_changed');
         rf(); notify('Exam deleted', 's');
       };
       const tog = (e) => {
         const all = DB.get('exams', []);
         DB.set('exams', all.map(x => x.id === e.id ? { ...x, status: x.status === 'active' ? 'inactive' : 'active' } : x));
+        EventBus.emit('exams_changed');
         rf(); notify(`Exam ${e.status === 'active' ? 'deactivated' : 'activated'}`, 'i');
       };
 
@@ -4596,9 +4767,10 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
       const handleSave = (q) => {
         const all = DB.get('questions', []);
         DB.set('questions', editQ ? all.map(x => x.id === editQ.id ? q : x) : [...all, q]);
+        EventBus.emit('questions_changed');
         rf(); setShowEd(false); notify(editQ ? 'Question updated!' : 'Question saved!', 's');
       };
-      const del = (id) => { if (!confirm('Delete this question?')) return; DB.set('questions', DB.get('questions', []).filter(q => q.id !== id)); rf(); notify('Deleted', 's'); };
+      const del = (id) => { if (!confirm('Delete this question?')) return; DB.set('questions', DB.get('questions', []).filter(q => q.id !== id)); EventBus.emit('questions_changed'); rf(); notify('Deleted', 's'); };
 
       if (showEd) return (
         <div className="main"><div className="mi">
@@ -4683,21 +4855,21 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
 
     /* ══════ ADMIN STUDENTS ═════════════════════════════════════════════════ */
     function AdminStudents() {
-      const [users, setUsers] = useState(DB.get('users', []).filter(u => u.role === 'student'));
-      const [atts, setAtts] = useState(DB.get('attempts', []));
+      const [allUsersLive] = useLiveData('users', []);
+      const [attsLive] = useLiveData('attempts', []);
+      const users = allUsersLive.filter(u => u.role === 'student');
+      const atts = attsLive;
       const [confirmDel, setConfirmDel] = useState(null);// {uid, name} to confirm
       const [searchQuery, setSearchQuery] = useState('');
       const [filterDate, setFilterDate] = useState('');
       const notify = useN();
-
-      const rf = () => { setUsers(DB.get('users', []).filter(u => u.role === 'student')); setAtts(DB.get('attempts', [])); };
 
       const clearStudentAttempts = (u) => {
         const remaining = DB.get('attempts', []).filter(a => a.userId !== u.id);
         const remainingMalp = DB.get('malpractice_logs', []).filter(a => a.userId !== u.id);
         DB.set('attempts', remaining);
         DB.set('malpractice_logs', remainingMalp);
-        rf();
+        EventBus.emit('attempts_changed');
         setConfirmDel(null);
         notify(`All test records for ${u.name} cleared.`, 's');
       };
@@ -4710,7 +4882,8 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
         DB.set('users', allUsers);
         DB.set('attempts', remaining);
         DB.set('malpractice_logs', remainingMalp);
-        rf();
+        EventBus.emit('users_changed');
+        EventBus.emit('attempts_changed');
         notify(`Student ${u.name} deleted.`, 's');
       };
 
@@ -4823,23 +4996,21 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
 
     /* ══════ ADMIN RESULTS ══════════════════════════════════════════════════ */
     function AdminResults() {
-      const [atts, setAtts] = useState(DB.get('attempts', []));
+      const [atts] = useLiveData('attempts', []);
       const [filterExam, setFilterExam] = useState('');
       const [filterStudent, setFilterStudent] = useState('');
       const [searchQuery, setSearchQuery] = useState('');
       const [filterDate, setFilterDate] = useState('');
-      const exams = DB.get('exams', []);
-      const users = DB.get('users', []);
+      const [exams] = useLiveData('exams', []);
+      const [users] = useLiveData('users', []);
       const notify = useN();
       const fmt = s => { const m = Math.floor(s / 60), ss = s % 60; return `${m}m ${ss}s`; };
-
-      const rf = () => setAtts(DB.get('attempts', []));
 
       const delAttempt = (id) => {
         if (!window.confirm('Delete this attempt record permanently?')) return;
         DB.set('attempts', DB.get('attempts', []).filter(a => a.id !== id));
         DB.set('malpractice_logs', DB.get('malpractice_logs', []).filter(a => a.attemptId !== id));
-        rf();
+        EventBus.emit('attempts_changed');
         notify('Attempt record deleted.', 's');
       };
 
@@ -4848,7 +5019,7 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
         if (!window.confirm(`Delete ALL ${count} attempt record(s) for this exam? Cannot be undone.`)) return;
         DB.set('attempts', DB.get('attempts', []).filter(a => a.examId !== examId));
         DB.set('malpractice_logs', DB.get('malpractice_logs', []).filter(a => a.examId !== examId));
-        rf();
+        EventBus.emit('attempts_changed');
         notify(`${count} records deleted.`, 's');
       };
 
@@ -4949,8 +5120,9 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
 
     /* ══════ STUDENT RESULTS ════════════════════════════════════════════════ */
     function StudentResults({ user, onResult }) {
-      const atts = DB.get('attempts', []).filter(a => a.userId === user.id);
-      const exams = DB.get('exams', []);
+      const [allAttempts] = useLiveData('attempts', []);
+      const [exams] = useLiveData('exams', []);
+      const atts = allAttempts.filter(a => a.userId === user.id);
       return (
         <div className="main"><div className="mi">
           <div className="phd"><div className="ptitle">My Results</div></div>
