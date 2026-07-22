@@ -118,6 +118,10 @@
       font-size: 1.1em !important
     }
 
+    .solution-text .katex {
+      font-size: 1.4em !important
+    }
+
     .katex-display {
       margin: .6em 0 !important;
       overflow-x: auto
@@ -4155,7 +4159,7 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
                       {q.explanation && !aiEx[q.id] && (
                         <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 'var(--radius)', padding: '11px 13px', marginTop: 10 }}>
                           <div style={{ fontSize: 10, fontWeight: 700, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 7 }}>📖 Solution</div>
-                          <div style={{ fontSize: 13, lineHeight: 1.9 }}><MT text={q.explanation} /></div>
+                          <div className="solution-text" style={{ fontSize: 13, lineHeight: 1.9 }}><MT text={q.explanation} /></div>
                           {q.explanationImageId && <ExplImage imgId={q.explanationImageId} />}
                         </div>
                       )}
@@ -4416,7 +4420,6 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
       const exams = DB.get('exams', []);
       const blank = { examId: examId || exams[0]?.id || '', sectionId: '', type: 'mcq', num: 1, difficulty: 'medium', text: '', options: ['', '', '', ''], correct: null, explanation: '', explanationImageId: null, image: null, hasImage: false };
       const [f, setF] = useState(editQ ? { ...editQ } : { ...blank, sectionId: (exams.find(e => e.id == (examId || exams[0]?.id))?.sections || [])[0]?.id || '' });
-      const [gen, setGen] = useState(false);
       const notify = useN();
       const tRef = useRef(null);
       const eRef = useRef(null);
@@ -4504,34 +4507,6 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
         } else {
           if (ref === tRef) s('text')(t => (t || '') + insert); else s('explanation')(e => (e || '') + insert);
         }
-      };
-
-      const aiGenExpl = async () => {
-        if (!f.text.trim()) { notify('Enter question text first', 'w'); return; }
-        if (f.type !== 'numerical' && f.correct === null) { notify('Set the correct answer first', 'w'); return; }
-        setGen(true);
-        try {
-          const caT = f.type === 'numerical' ? f.correct : f.type === 'mcq' ? (f.correct !== null && f.options ? f.options[f.correct] : '') : (Array.isArray(f.correct) && f.options ? f.correct.map(i => f.options[i]).join(', ') : '');
-          const res = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{
-                role: 'user', content: `Generate a complete, detailed step-by-step solution for this competitive exam question (JEE/GATE level).
-
-Question: ${f.text}
-Type: ${f.type}
-${f.options?.length ? 'Options:\n' + f.options.map((o, i) => `(${String.fromCharCode(65 + i)}) ${o}`).join('\n') : ''}
-Correct Answer: ${caT}
-
-Include: all mathematical working, key formulas, why wrong options fail (for MCQ/MSQ), common mistakes.
-Use $...$ for inline math, $$...$$ for display equations. Use **bold** for emphasis.`}]
-            })
-          });
-          const data = await res.json();
-          s('explanation')(data.content?.[0]?.text || '');
-          notify('AI explanation generated!', 's');
-        } catch { notify('Failed to generate. Check API connection.', 'e'); }
-        finally { setGen(false); }
       };
 
       const save = async () => {
@@ -4732,7 +4707,6 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
                   <input type="file" ref={exImgRef} style={{ display: 'none' }} accept="image/jpeg,image/png,image/webp" onChange={handleExplImage} />
                   <button className="btn btn-outline btn-sm" onClick={() => exImgRef.current?.click()}>📷 {f._explImgPreview ? 'Change Image' : 'Upload Image'}</button>
                   {f._explImgPreview && <button className="btn btn-sm" style={{ background: '#fef2f2', color: 'var(--red)' }} onClick={() => setF(x => ({ ...x, explanationImageId: null, _explImgPreview: null }))}>✕ Remove</button>}
-                  <button className="btn btn-outline btn-sm" onClick={aiGenExpl} disabled={gen}>{gen ? 'Generating…' : '🤖 AI Generate'}</button>
                 </div>
               </div>
               {f._explImgPreview && (
@@ -4796,7 +4770,7 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
               {f.explanation && (
                 <div style={{ marginTop: 13, padding: '11px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 'var(--radius)' }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 7 }}>📖 Solution</div>
-                  <div style={{ fontSize: 13, lineHeight: 1.9 }}><MT text={f.explanation} /></div>
+                  <div className="solution-text" style={{ fontSize: 13, lineHeight: 1.9 }}><MT text={f.explanation} /></div>
                   {f._explImgPreview && (
                     <div style={{ marginTop: 8, textAlign: 'center' }}>
                       <img src={f._explImgPreview} style={{ maxWidth: '100%', maxHeight: 250, borderRadius: 4, border: '1px solid var(--gray-bd)' }} alt="Explanation diagram" />
