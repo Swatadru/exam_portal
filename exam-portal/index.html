@@ -3921,8 +3921,6 @@
     function ResultPage({ attempt, exam, onBack }) {
       const questions = DB.get('questions', []).filter(q => q.examId === exam.id);
       const [tab, setTab] = useState('overview');
-      const [aiEx, setAiEx] = useState({});
-      const [aiLd, setAiLd] = useState({});
       const notify = useN();
       const { results, sectionResults } = attempt;
 
@@ -3981,37 +3979,6 @@
         return { rank, percentile, total };
       }, [results.score, exam.id]);
 
-      const getAI = async (q) => {
-        if (aiEx[q.id] || aiLd[q.id]) return;
-        setAiLd(l => ({ ...l, [q.id]: true }));
-        try {
-          const det = results.details[q.id];
-          const ua = det?.userAnswer;
-          const uaText = q.type === 'numerical' ? ua : q.type === 'mcq' ? (ua !== undefined && ua !== null && q.options ? q.options[ua] : 'Not answered') : (Array.isArray(ua) && q.options ? ua.map(i => q.options[i]).join(', ') : 'Not answered');
-          const caText = q.type === 'numerical' ? q.correct : q.type === 'mcq' ? (q.options ? q.options[q.correct] : '') : (Array.isArray(q.correct) && q.options ? q.correct.map(i => q.options[i]).join(', ') : '');
-          const prompt = `You are an expert teacher for competitive exams (JEE, GATE, CAT). Provide a complete, detailed step-by-step solution.
-
-Question: ${q.text}
-${q.options ? 'Options:\n' + q.options.map((o, i) => `(${String.fromCharCode(65 + i)}) ${o}`).join('\n') : ''}
-Correct Answer: ${caText}
-Student's Answer: ${uaText} [${det?.status || 'skipped'}]
-
-Provide:
-1. Complete step-by-step solution with all mathematical working
-2. Key concept/formula used
-3. Why wrong options are incorrect (for MCQ/MSQ)
-4. Common mistake to avoid
-
-Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emphasis. Be thorough.`;
-          const res = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
-          });
-          const data = await res.json();
-          setAiEx(e => ({ ...e, [q.id]: data.content?.[0]?.text || 'Unable to generate explanation.' }));
-        } catch { notify('Failed to load AI explanation', 'e'); setAiEx(e => ({ ...e, [q.id]: 'Error loading explanation.' })); }
-        finally { setAiLd(l => ({ ...l, [q.id]: false })); }
-      };
 
       const fmtT = s => { const m = Math.floor(s / 60), ss = s % 60; return `${m}m ${ss}s`; };
 
@@ -4156,7 +4123,7 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
                       )}
 
                       {/* Admin-written explanation */}
-                      {q.explanation && !aiEx[q.id] && (
+                      {q.explanation && (
                         <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 'var(--radius)', padding: '11px 13px', marginTop: 10 }}>
                           <div style={{ fontSize: 10, fontWeight: 700, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 7 }}>📖 Solution</div>
                           <div className="solution-text" style={{ fontSize: 13, lineHeight: 1.9 }}><MT text={q.explanation} /></div>
@@ -4164,28 +4131,11 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
                         </div>
                       )}
                       {/* Explanation image without text */}
-                      {!q.explanation && q.explanationImageId && !aiEx[q.id] && (
+                      {!q.explanation && q.explanationImageId && (
                         <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 'var(--radius)', padding: '11px 13px', marginTop: 10 }}>
                           <div style={{ fontSize: 10, fontWeight: 700, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 7 }}>📖 Solution</div>
                           <ExplImage imgId={q.explanationImageId} />
                         </div>
-                      )}
-
-                      {/* AI explanation */}
-                      {aiEx[q.id] && (
-                        <div className="ai-box">
-                          <div className="ai-hd">🤖 AI Detailed Explanation</div>
-                          <div className="ai-body"><MT text={aiEx[q.id]} /></div>
-                        </div>
-                      )}
-                      {aiLd[q.id] && (
-                        <div className="ai-box">
-                          <div className="ai-spin">🤖 Generating AI explanation<span className="dots"><span>.</span><span>.</span><span>.</span></span></div>
-                        </div>
-                      )}
-
-                      {!aiEx[q.id] && !aiLd[q.id] && (
-                        <button className="btn btn-outline btn-sm mt2" style={{ fontSize: 12 }} onClick={() => getAI(q)}>🤖 AI Explain</button>
                       )}
                     </div>
                   </div>
