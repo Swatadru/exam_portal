@@ -115,7 +115,7 @@
 
     /* KaTeX */
     .katex {
-      font-size: 1em !important
+      font-size: 1.1em !important
     }
 
     .katex-display {
@@ -1180,7 +1180,7 @@
     }
 
     .opt-k {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
       color: var(--text3);
       min-width: 17px
@@ -1195,9 +1195,9 @@
     }
 
     .opt-lbl {
-      font-size: 13px;
+      font-size: 14px;
       color: var(--text);
-      line-height: 1.65;
+      line-height: 1.7;
       flex: 1
     }
 
@@ -1953,6 +1953,26 @@
       border: 1px solid var(--gray-bd)
     }
 
+    /* ── EXPLANATION IMAGE ── */
+    .expl-img-wrap {
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #f8fafc;
+      border: 1px solid var(--gray-bd);
+      text-align: center
+    }
+
+    .expl-img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      max-height: 300px;
+      object-fit: contain;
+      margin: 0 auto
+    }
+
     /* ── MALPRACTICE MODAL ── */
     .malp-overlay {
       position: fixed;
@@ -2366,6 +2386,29 @@
         padding: 10px
       }
 
+      .qbody {
+        font-size: 15px
+      }
+
+      .opt-lbl {
+        font-size: 15px;
+        line-height: 1.7
+      }
+
+      .opt-k {
+        font-size: 15px
+      }
+
+      .katex {
+        font-size: 1.15em !important
+      }
+
+      .opt-rd,
+      .opt-cb {
+        width: 21px;
+        height: 21px
+      }
+
       .num-kp {
         grid-template-columns: repeat(4, 38px)
       }
@@ -2465,7 +2508,40 @@
       }
 
       .opt {
-        padding: 8px 10px
+        padding: 10px 12px
+      }
+
+      .qbody {
+        font-size: 16px;
+        line-height: 1.85
+      }
+
+      .opt-lbl {
+        font-size: 16px;
+        line-height: 1.75
+      }
+
+      .opt-k {
+        font-size: 15px;
+        min-width: 19px
+      }
+
+      .katex {
+        font-size: 1.21em !important
+      }
+
+      .opt-rd,
+      .opt-cb {
+        width: 22px;
+        height: 22px
+      }
+
+      .qinstr {
+        font-size: 13px
+      }
+
+      .qmarks {
+        font-size: 12px
       }
 
       .rmg {
@@ -2582,6 +2658,22 @@
       if (ld) return <div className="opt-img-skeleton" />;
       if (!src) return null;
       return <div className="opt-img-wrap"><img src={src} className="opt-img" alt="Option" loading="lazy" /></div>;
+    }
+
+    /* ══════ EXPLANATION IMAGE ════════════════════════════════════════════ */
+    function ExplImage({ imgId }) {
+      const [src, setSrc] = useState(null);
+      const [ld, setLd] = useState(true);
+      useEffect(() => {
+        let active = true;
+        if (imgId) {
+          IDB.get(imgId).then(res => { if (active) { setSrc(res); setLd(false); } }).catch(() => { if (active) setLd(false); });
+        } else { setLd(false); }
+        return () => { active = false; };
+      }, [imgId]);
+      if (ld) return <div className="opt-img-skeleton" />;
+      if (!src) return null;
+      return <div className="expl-img-wrap"><img src={src} className="expl-img" alt="Explanation diagram" loading="lazy" /></div>;
     }
 
     /* ══════ IMAGE COMPRESSION ══════════════════════════════════════════════ */
@@ -4064,6 +4156,14 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
                         <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 'var(--radius)', padding: '11px 13px', marginTop: 10 }}>
                           <div style={{ fontSize: 10, fontWeight: 700, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 7 }}>📖 Solution</div>
                           <div style={{ fontSize: 13, lineHeight: 1.9 }}><MT text={q.explanation} /></div>
+                          {q.explanationImageId && <ExplImage imgId={q.explanationImageId} />}
+                        </div>
+                      )}
+                      {/* Explanation image without text */}
+                      {!q.explanation && q.explanationImageId && !aiEx[q.id] && (
+                        <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 'var(--radius)', padding: '11px 13px', marginTop: 10 }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 7 }}>📖 Solution</div>
+                          <ExplImage imgId={q.explanationImageId} />
                         </div>
                       )}
 
@@ -4314,13 +4414,14 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
     /* ══════ QUESTION EDITOR ════════════════════════════════════════════════ */
     function QuestionEditor({ examId, editQ, onSave, onCancel }) {
       const exams = DB.get('exams', []);
-      const blank = { examId: examId || exams[0]?.id || '', sectionId: '', type: 'mcq', num: 1, difficulty: 'medium', text: '', options: ['', '', '', ''], correct: null, explanation: '', image: null, hasImage: false };
+      const blank = { examId: examId || exams[0]?.id || '', sectionId: '', type: 'mcq', num: 1, difficulty: 'medium', text: '', options: ['', '', '', ''], correct: null, explanation: '', explanationImageId: null, image: null, hasImage: false };
       const [f, setF] = useState(editQ ? { ...editQ } : { ...blank, sectionId: (exams.find(e => e.id == (examId || exams[0]?.id))?.sections || [])[0]?.id || '' });
       const [gen, setGen] = useState(false);
       const notify = useN();
       const tRef = useRef(null);
       const eRef = useRef(null);
       const iRef = useRef(null);
+      const exImgRef = useRef(null);
 
       useEffect(() => {
         if (editQ) {
@@ -4337,6 +4438,9 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
             Promise.all(fetchPromises).then(() => {
               setF(x => ({ ...x, _optImgPreviews: prevs }));
             });
+          }
+          if (editQ.explanationImageId) {
+            IDB.get(editQ.explanationImageId).then(img => { if (img) setF(x => ({ ...x, _explImgPreview: img })); });
           }
         }
       }, [editQ?.id]);
@@ -4376,6 +4480,18 @@ Use LaTeX: $...$ for inline, $$...$$ for display equations. Use **bold** for emp
         r.readAsDataURL(file);
       };
 
+      const handleExplImage = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 10 * 1024 * 1024) { notify('Image too large (max 10MB)', 'w'); e.target.value = ''; return; }
+        const r = new FileReader();
+        r.onload = async (ev) => {
+          const compressed = await compressImage(ev.target.result, 800, 0.8);
+          setF(x => ({ ...x, explanationImageId: 'explimg_' + (x.id || 'new'), _explImgPreview: compressed }));
+          e.target.value = '';
+        };
+        r.readAsDataURL(file);
+      };
 
       const insertSym = (sym, ref) => {
         const el = ref?.current;
@@ -4431,6 +4547,10 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
 
         const qid = editQ?.id || uid();
         const q = { ...f, id: qid, hasImage: !!f.image };
+        // Update explanation image ID with final qid
+        if (q.explanationImageId || q._explImgPreview) {
+          q.explanationImageId = 'explimg_' + qid;
+        }
         // Update option image IDs with final qid
         if (q.optionImages) {
           const updated = {};
@@ -4442,6 +4562,7 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
         const qForStorage = { ...q };
         delete qForStorage.image;
         delete qForStorage._optImgPreviews;
+        delete qForStorage._explImgPreview;
 
         try {
           if (f.image) await IDB.set(qid, f.image);
@@ -4452,6 +4573,12 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
               const imgKey = 'optimg_' + qid + '_' + idx;
               await IDB.set(imgKey, data);
             }
+          }
+          // Save explanation image to IDB
+          if (f._explImgPreview) {
+            await IDB.set('explimg_' + qid, f._explImgPreview);
+          } else if (!f.explanationImageId) {
+            await IDB.del('explimg_' + qid);
           }
           onSave(qForStorage);
         } catch (err) {
@@ -4599,10 +4726,20 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
 
             {/* Explanation */}
             <div className="card">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11, flexWrap: 'wrap', gap: 6 }}>
                 <div className="chd" style={{ margin: 0 }}>Explanation / Solution <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--text3)' }}>— LaTeX supported</span></div>
-                <button className="btn btn-outline btn-sm" onClick={aiGenExpl} disabled={gen}>{gen ? 'Generating…' : '🤖 AI Generate'}</button>
+                <div className="flex ia g2">
+                  <input type="file" ref={exImgRef} style={{ display: 'none' }} accept="image/jpeg,image/png,image/webp" onChange={handleExplImage} />
+                  <button className="btn btn-outline btn-sm" onClick={() => exImgRef.current?.click()}>📷 {f._explImgPreview ? 'Change Image' : 'Upload Image'}</button>
+                  {f._explImgPreview && <button className="btn btn-sm" style={{ background: '#fef2f2', color: 'var(--red)' }} onClick={() => setF(x => ({ ...x, explanationImageId: null, _explImgPreview: null }))}>✕ Remove</button>}
+                  <button className="btn btn-outline btn-sm" onClick={aiGenExpl} disabled={gen}>{gen ? 'Generating…' : '🤖 AI Generate'}</button>
+                </div>
               </div>
+              {f._explImgPreview && (
+                <div style={{ marginBottom: 11, textAlign: 'center', background: '#f8fafc', border: '1px solid var(--gray-bd)', borderRadius: 'var(--radius)', padding: 10 }}>
+                  <img src={f._explImgPreview} style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 4 }} alt="Explanation image preview" />
+                </div>
+              )}
               <div className="mh">
                 {SYMS.slice(0, 12).map(([sym, lbl]) => (
                   <button key={sym} className="ms" onClick={() => {
@@ -4660,6 +4797,11 @@ Use $...$ for inline math, $$...$$ for display equations. Use **bold** for empha
                 <div style={{ marginTop: 13, padding: '11px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 'var(--radius)' }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 7 }}>📖 Solution</div>
                   <div style={{ fontSize: 13, lineHeight: 1.9 }}><MT text={f.explanation} /></div>
+                  {f._explImgPreview && (
+                    <div style={{ marginTop: 8, textAlign: 'center' }}>
+                      <img src={f._explImgPreview} style={{ maxWidth: '100%', maxHeight: 250, borderRadius: 4, border: '1px solid var(--gray-bd)' }} alt="Explanation diagram" />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
