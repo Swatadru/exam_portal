@@ -3284,6 +3284,7 @@
       const doSubmitRef = useRef(null);
       /* Phase 2 — Bug #6: Refs for latest callbacks to avoid stale closures in event handlers */
       const terminateRef = useRef(null);
+      const terminatedRef = useRef(false);
       const logMalpRef = useRef(null);
       const notifyRef = useRef(notify);
       /* Phase 2 — Bug #3: Deadline-based timer to prevent drift */
@@ -3300,8 +3301,8 @@
 
       /* ── terminate exam due to malpractice ── */
       const terminateExam = useCallback((reason, reasonLabel) => {
-        if (submittedRef.current) return;
-        submittedRef.current = true;
+        if (terminatedRef.current || submittedRef.current) return;
+        terminatedRef.current = true;
         logMalpractice(reason, 'Auto-terminated');
         setMalpTerminated({ reason: reasonLabel, countdown: 5 });
         try { if (document.fullscreenElement) document.exitFullscreen(); } catch { }
@@ -3665,7 +3666,7 @@
               {saved && <span style={{ fontSize: 11, color: 'rgba(255,255,255,.65)' }}>✓ Saved</span>}
               {tabWarns > 0 && <span style={{ background: 'rgba(220,38,38,.3)', color: '#fef2f2', padding: '2px 7px', borderRadius: 3, fontSize: 11, fontWeight: 700 }}>⚠{tabWarns}</span>}
               <div className={`exam-timer ${tc}`}>{fmt(timeLeft)}</div>
-              <button className="btn btn-red btn-sm" onClick={() => setShowSub(true)}>Submit</button>
+              <button className="btn btn-red btn-sm" onClick={() => setShowSub(true)} disabled={!!malpTerminated}>Submit</button>
             </div>
           </div>
 
