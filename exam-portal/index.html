@@ -3364,7 +3364,7 @@
       /* Fullscreen guard — exit = immediate terminate */
       useEffect(() => {
         const fn = () => {
-          if (!document.fullscreenElement && !submittedRef.current) {
+          if (!document.fullscreenElement && !submittedRef.current && !terminatedRef.current) {
             /* Phase 2 — Bug #6: Use refs to avoid stale closures */
             if (logMalpRef.current) logMalpRef.current('fullscreen_exit', 'Exited fullscreen mode');
             if (terminateRef.current) terminateRef.current('fullscreen_exit', 'You exited fullscreen mode during the exam.');
@@ -3377,7 +3377,7 @@
       /* Tab switch — 3 warnings then terminate */
       useEffect(() => {
         const fn = () => {
-          if (document.hidden && !submittedRef.current) {
+          if (document.hidden && !submittedRef.current && !terminatedRef.current) {
             tabWarnsRef.current += 1;
             const w = tabWarnsRef.current;
             setTabWarns(w);
@@ -3437,7 +3437,7 @@
       /* Window blur detection */
       useEffect(() => {
         const fn = () => {
-          if (!submittedRef.current && !document.hidden) {
+          if (!submittedRef.current && !terminatedRef.current && !document.hidden) {
             logMalpractice('window_blur', 'Window lost focus');
           }
         };
@@ -3594,33 +3594,41 @@
         /* Phase 2 — Bug #4: Strict idempotency guard — NO bypasses */
         if (submittedRef.current) return;
         submittedRef.current = true;
-        saveTime();
-        try { if (document.fullscreenElement) document.exitFullscreen(); } catch { }
-        const results = calcScore();
-        const sectionResults = sections.map(sec => {
-          const sq = questions.filter(q => q.sectionId === sec.id);
-          let sc = 0, cor = 0, wr = 0, sk = 0;
-          sq.forEach(q => { const d = results.details[q.id]; if (d) { sc += d.pts; if (d.status === 'correct' || d.status === 'partial') cor++; else if (d.status === 'wrong') wr++; else sk++; } else sk++; });
-          return { sectionId: sec.id, sectionName: sec.name, color: sec.color, score: sc, correct: cor, wrong: wr, skipped: sk, total: sq.length };
-        });
+        try {
+          saveTime();
+          try { if (document.fullscreenElement) document.exitFullscreen(); } catch { }
+          const results = calcScore();
+          const sectionResults = sections.map(sec => {
+            const sq = questions.filter(q => q.sectionId === sec.id);
+            let sc = 0, cor = 0, wr = 0, sk = 0;
+            sq.forEach(q => { const d = results.details[q.id]; if (d) { sc += d.pts; if (d.status === 'correct' || d.status === 'partial') cor++; else if (d.status === 'wrong') wr++; else sk++; } else sk++; });
+            return { sectionId: sec.id, sectionName: sec.name, color: sec.color, score: sc, correct: cor, wrong: wr, skipped: sk, total: sq.length };
+          });
 
-        // Enforce 0 score penalty for malpractice
-        if (reason === 'malpractice') {
-          results.score = 0;
-          sectionResults.forEach(s => s.score = 0);
-        }
+          // Enforce 0 score penalty for malpractice
+          if (reason === 'malpractice') {
+            results.score = 0;
+            sectionResults.forEach(s => s.score = 0);
+          }
 
-        const att = { id: uid(), examId: exam.id, userId: user.id, date: new Date().toISOString(), answers, states, timeSpent, results, sectionResults, totalTime: exam.duration * 60 - timeLeft, auto, reason, tabWarnings: tabWarnsRef.current, malpracticeEvents: malpEvents };
-        /* Phase 2 — Bug #7: Concurrent-write-safe append with dedup */
-        DB.appendToArray('attempts', att);
-        EventBus.emit('attempts_changed');
-        // Store malpractice logs separately for admin
-        if (malpEvents.length > 0) {
-          const logs = DB.get('malpractice_logs', []);
-          logs.push({ attemptId: att.id, userId: user.id, userName: user.name, examId: exam.id, examTitle: exam.title, events: malpEvents, timestamp: new Date().toISOString() });
-          DB.set('malpractice_logs', logs);
+          const att = { id: uid(), examId: exam.id, userId: user.id, date: new Date().toISOString(), answers, states, timeSpent, results, sectionResults, totalTime: exam.duration * 60 - timeLeft, auto, reason, tabWarnings: tabWarnsRef.current, malpracticeEvents: malpEvents };
+          /* Phase 2 — Bug #7: Concurrent-write-safe append with dedup */
+          DB.appendToArray('attempts', att);
+          EventBus.emit('attempts_changed');
+          // Store malpractice logs separately for admin
+          if (malpEvents.length > 0) {
+            const logs = DB.get('malpractice_logs', []);
+            logs.push({ attemptId: att.id, userId: user.id, userName: user.name, examId: exam.id, examTitle: exam.title, events: malpEvents, timestamp: new Date().toISOString() });
+            DB.set('malpractice_logs', logs);
+          }
+          onSubmit(att);
+        } catch (err) {
+          console.error('doSubmit failed:', err);
+          /* Still navigate to result even if scoring/saving fails */
+          const fallbackAtt = { id: uid(), examId: exam.id, userId: user.id, date: new Date().toISOString(), answers, states, timeSpent, results: { score: 0, correct: 0, wrong: 0, skipped: 0, total: questions.length, details: {} }, sectionResults: [], totalTime: exam.duration * 60 - timeLeft, auto, reason, tabWarnings: tabWarnsRef.current, malpracticeEvents: malpEvents };
+          try { DB.appendToArray('attempts', fallbackAtt); } catch { }
+          onSubmit(fallbackAtt);
         }
-        onSubmit(att);
       };
       doSubmitRef.current = doSubmit;
 
