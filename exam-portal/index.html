@@ -17,6 +17,7 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <style>
     *,
     *::before,
@@ -2733,11 +2734,143 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const auth = firebase.auth();
+    // Persist auth state across browser sessions
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     
     // Master local state cache
     const ClientDB = {
       users: [], exams: [], questions: [], attempts: [], malpractice_logs: []
     };
+
+    /* ══════ FIREBASE AUTH HELPERS ═══════════════════════════════════════════
+       Maps mobile numbers to synthetic emails for Firebase Email/Password Auth.
+       Users never see or type an email — they still log in with mobile + password.
+    ═══════════════════════════════════════════════════════════════════════ */
+    const FirebaseAuth = {
+      // Convert countryCode + mobile → fake email, e.g. 917003902225@exam.chhatrobondhu.app
+      mobileToEmail(countryCode, mobile) {
+        const cc = (countryCode || '+91').replace(/[^0-9]/g, '');
+        const m = String(mobile || '').replace(/\D/g, '');
+        return `${cc}${m}@exam.chhatrobondhu.app`;
+      },
+
+      // Sign in with Firebase Auth
+      async signIn(countryCode, mobile, password) {
+        const email = this.mobileToEmail(countryCode, mobile);
+        return auth.signInWithEmailAndPassword(email, password);
+      },
+
+      // Create a new Firebase Auth account
+      async signUp(countryCode, mobile, password) {
+        const email = this.mobileToEmail(countryCode, mobile);
+        return auth.createUserWithEmailAndPassword(email, password);
+      },
+
+      // Sign out
+      async signOut() {
+        return auth.signOut();
+      },
+
+      // Get current Firebase Auth user
+      currentUser() {
+        return auth.currentUser;
+      },
+
+      // Listen for auth state changes
+      onAuthStateChanged(callback) {
+        return auth.onAuthStateChanged(callback);
+      },
+
+      // Create Firebase Auth account for an existing user (migration helper).
+      // If the account already exists, silently succeed.
+      async ensureAuthAccount(countryCode, mobile, password) {
+        const email = this.mobileToEmail(countryCode, mobile);
+        try {
+          await auth.createUserWithEmailAndPassword(email, password);
+        } catch (e) {
+          // auth/email-already-in-use is expected for already-migrated users
+          if (e.code !== 'auth/email-already-in-use') {
+            console.warn('Migration: could not create account for', email, e.code);
+          }
+        }
+      }
+    };
+
+    /* ── One-time migration: create Firebase Auth accounts for all existing users ── */
+    let _migrationDone = false;
+    async function runMigrationIfNeeded() {
+      if (_migrationDone) return;
+      _migrationDone = true;
+      try {
+        const flagSnap = await db.ref('_migration/auth_done').once('value');
+        if (flagSnap.val() === true) return; // already migrated
+
+        const usersSnap = await db.ref('users').once('value');
+        let users = usersSnap.val() || [];
+        if (!Array.isArray(users) && typeof users === 'object') users = Object.values(users);
+        users = users.filter(Boolean);
+
+        if (users.length === 0) return;
+
+        console.log('Migration: creating Firebase Auth accounts for', users.length, 'users...');
+        // We need to save the current admin auth state and re-sign-in after migration
+        // because createUserWithEmailAndPassword signs in as the new user.
+        // Instead, we'll use a sequential approach: sign out, create each, then let
+        // the admin sign back in normally.
+        const currentAuthUser = auth.currentUser;
+        const currentEmail = currentAuthUser?.email;
+
+        for (const u of users) {
+          if (!u.mobile || !u.password) continue;
+          const email = FirebaseAuth.mobileToEmail(u.countryCode || '+91', u.mobile);
+          try {
+            // We can't use createUserWithEmailAndPassword here because it auto-signs-in.
+            // Instead we use the REST API approach through a secondary app.
+            const secondaryApp = firebase.apps.find(a => a.name === 'migration')
+              || firebase.initializeApp(firebaseConfig, 'migration');
+            const secondaryAuth = secondaryApp.auth();
+            await secondaryAuth.createUserWithEmailAndPassword(email, u.password);
+            await secondaryAuth.signOut();
+          } catch (e) {
+            if (e.code !== 'auth/email-already-in-use') {
+              console.warn('Migration: failed for', u.mobile, e.code);
+            }
+          }
+        }
+
+        // Mark migration as done
+        await db.ref('_migration/auth_done').set(true);
+        console.log('Migration: completed successfully.');
+      } catch (e) {
+        console.error('Migration error:', e);
+      }
+    }
+
+    /* ── Bootstrap: ensure admin Firebase Auth account exists on startup ──
+       This solves the chicken-and-egg: collection listeners attach after auth,
+       but admin can't auth without a Firebase Auth account.
+       Uses a secondary app so the primary auth state isn't disturbed. ── */
+    (async function bootstrapAdminAuth() {
+      try {
+        const secondaryApp = firebase.apps.find(a => a.name === 'bootstrap')
+          || firebase.initializeApp(firebaseConfig, 'bootstrap');
+        const bootstrapAuth = secondaryApp.auth();
+        const adminEmail = FirebaseAuth.mobileToEmail('+91', '7003902225');
+        try {
+          await bootstrapAuth.createUserWithEmailAndPassword(adminEmail, 'Atanu@123');
+          console.log('Bootstrap: admin Firebase Auth account created.');
+        } catch (e) {
+          // auth/email-already-in-use means it already exists — that's fine
+          if (e.code !== 'auth/email-already-in-use') {
+            console.warn('Bootstrap: admin account check failed:', e.code);
+          }
+        }
+        await bootstrapAuth.signOut();
+      } catch (e) {
+        console.warn('Bootstrap error:', e);
+      }
+    })();
 
     /* ══════ EVENT BUS (In-memory reactivity) ═══════════════════════════════ */
     const uid = () => Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
@@ -2765,27 +2898,43 @@
 
     // Listen to collections
     const collections = ['users', 'exams', 'questions', 'attempts', 'malpractice_logs'];
-    collections.forEach(key => {
-      db.ref(key).on('value', (snapshot) => {
-        let val = snapshot.val() || [];
-        if (!Array.isArray(val) && typeof val === 'object') {
-          val = Object.values(val); // Convert Firebase object-arrays back to real arrays
-        }
-        if (Array.isArray(val)) {
-          val = val.filter(Boolean); // Remove nulls from sparse arrays
-        }
-        ClientDB[key] = val;
-        
-        // Safely ensure admin exists after we fetch the real users array from Firebase
-        if (key === 'users') {
-          if (!ClientDB.users.some(u => u.role === 'admin' && u.mobile === '7003902225')) {
-            ClientDB.users.push({ id: 'adm1', name: 'Atanu Dutta', mobile: '7003902225', countryCode: '+91', password: 'Atanu@123', role: 'admin', joinDate: '2025-01-01' });
-            db.ref('users').set(ClientDB.users);
+    let _collectionsAttached = false;
+    function attachCollectionListeners() {
+      if (_collectionsAttached) return;
+      _collectionsAttached = true;
+      collections.forEach(key => {
+        db.ref(key).on('value', (snapshot) => {
+          let val = snapshot.val() || [];
+          if (!Array.isArray(val) && typeof val === 'object') {
+            val = Object.values(val); // Convert Firebase object-arrays back to real arrays
           }
-        }
-        
-        EventBus.emit(key + '_changed');
+          if (Array.isArray(val)) {
+            val = val.filter(Boolean); // Remove nulls from sparse arrays
+          }
+          ClientDB[key] = val;
+          
+          // Safely ensure admin exists after we fetch the real users array from Firebase.
+          // Also ensure admin has a Firebase Auth account.
+          if (key === 'users') {
+            if (!ClientDB.users.some(u => u.role === 'admin' && u.mobile === '7003902225')) {
+              ClientDB.users.push({ id: 'adm1', name: 'Atanu Dutta', mobile: '7003902225', countryCode: '+91', password: 'Atanu@123', role: 'admin', joinDate: '2025-01-01' });
+              db.ref('users').set(ClientDB.users);
+              // Create Firebase Auth account for admin (async, fire-and-forget)
+              FirebaseAuth.ensureAuthAccount('+91', '7003902225', 'Atanu@123');
+            }
+          }
+          
+          EventBus.emit(key + '_changed');
+        });
       });
+    }
+    // Attach listeners once a user is authenticated
+    auth.onAuthStateChanged((firebaseUser) => {
+      if (firebaseUser) {
+        attachCollectionListeners();
+        // Run migration on first admin login
+        runMigrationIfNeeded();
+      }
     });
 
     // Connection status monitor
@@ -2909,7 +3058,7 @@
         return null;
       };
 
-      const login = () => {
+      const login = async () => {
         const mobileVal = String(f.mobile || '').replace(/\D/g, '');
         const ccVal = f.countryCode;
         const passVal = f.password || '';
@@ -2917,24 +3066,37 @@
         const mErr = validateMobile(mobileVal, ccVal);
         if (mErr) { setErr(mErr); return; }
         setErr(''); setBusy(true);
-        setTimeout(() => {
-          try {
-            const allUsers = DB.get('users', []);
-            const u = allUsers.find(x => String(x.mobile || '').replace(/\D/g, '') === mobileVal && (x.countryCode || '+91') === ccVal && String(x.password || '') === passVal);
-            if (u) {
-              notify('Welcome back, ' + u.name + '!', 's'); onLogin(u);
-            } else {
-              setErr('Invalid mobile number or password. Please try again.');
-            }
-          } catch (e) {
-            setErr('System error: ' + e.message);
-          } finally {
-            setBusy(false);
+        try {
+          // Authenticate via Firebase Auth
+          await FirebaseAuth.signIn(ccVal, mobileVal, passVal);
+          // Auth succeeded — find the user profile in our users collection
+          // Wait a moment for collection listeners to attach and load data
+          await new Promise(r => setTimeout(r, 500));
+          const allUsers = DB.get('users', []);
+          const u = allUsers.find(x => String(x.mobile || '').replace(/\D/g, '') === mobileVal && (x.countryCode || '+91') === ccVal);
+          if (u) {
+            notify('Welcome back, ' + u.name + '!', 's'); onLogin(u);
+          } else {
+            // Auth account exists but no profile yet — shouldn't happen normally
+            // Try creating a minimal profile
+            const nu = { id: uid(), name: 'User', mobile: mobileVal, countryCode: ccVal, password: passVal, role: 'student', joinDate: new Date().toISOString().slice(0, 10) };
+            DB.appendToArray('users', nu);
+            notify('Welcome!', 's'); onLogin(nu);
           }
-        }, 350);
+        } catch (e) {
+          if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
+            setErr('Invalid mobile number or password. Please try again.');
+          } else if (e.code === 'auth/too-many-requests') {
+            setErr('Too many failed attempts. Please try again later.');
+          } else {
+            setErr('Login error: ' + (e.message || e.code));
+          }
+        } finally {
+          setBusy(false);
+        }
       };
 
-      const register = () => {
+      const register = async () => {
         setErr('');
         const nameVal = f.name.trim();
         const mobileVal = String(f.mobile || '').replace(/\D/g, '');
@@ -2944,19 +3106,35 @@
         const mErr = validateMobile(mobileVal, ccVal);
         if (mErr) { setErr(mErr); return; }
         if (passVal.length < 6) { setErr('Password must be at least 6 characters.'); return; }
+        setBusy(true);
         try {
+          // Check local users list for duplicate mobile
           const users = DB.get('users', []);
-          if (users.find(u => String(u.mobile || '').replace(/\D/g, '') === mobileVal && (u.countryCode || '+91') === ccVal)) { setErr('This mobile number is already registered.'); return; }
+          if (users.find(u => String(u.mobile || '').replace(/\D/g, '') === mobileVal && (u.countryCode || '+91') === ccVal)) { setErr('This mobile number is already registered.'); setBusy(false); return; }
+          
+          // Create Firebase Auth account
+          await FirebaseAuth.signUp(ccVal, mobileVal, passVal);
+          
+          // Auth account created — now wait for collection listeners to attach
+          await new Promise(r => setTimeout(r, 500));
+          
+          // Save user profile to database
           const nu = { id: uid(), name: nameVal, mobile: mobileVal, countryCode: ccVal, password: passVal, role: 'student', joinDate: new Date().toISOString().slice(0, 10) };
-          const updatedUsers = [...users, nu];
+          const updatedUsers = [...DB.get('users', []), nu];
           DB.set('users', updatedUsers);
           EventBus.emit('users_changed');
-          const saved = DB.get('users', []);
-          if (!saved.find(u => u.mobile === mobileVal)) { setErr('Registration failed — storage error. Please try again.'); return; }
           notify('Account created! Welcome, ' + nu.name, 's');
           onLogin(nu);
         } catch (e) {
-          setErr('System error: ' + e.message);
+          if (e.code === 'auth/email-already-in-use') {
+            setErr('This mobile number is already registered.');
+          } else if (e.code === 'auth/weak-password') {
+            setErr('Password is too weak. Please use at least 6 characters.');
+          } else {
+            setErr('Registration error: ' + (e.message || e.code));
+          }
+        } finally {
+          setBusy(false);
         }
       };
 
@@ -5168,7 +5346,7 @@
 
     /* ══════ ROOT APP ════════════════════════════════════════════════════════ */
     function App() {
-      const [view, setView] = useState('auth');
+      const [view, setView] = useState('loading'); // start with loading while checking auth state
       const [user, setUser] = useState(null);
       const [nav, setNav] = useState('dashboard');
       const [pendingExam, setPendingExam] = useState(null);
@@ -5179,9 +5357,42 @@
       const [drawerOpen, setDrawerOpen] = useState(false);
       const notify = useN();
 
+      // Session persistence: check if user is already signed in on page load
+      useEffect(() => {
+        const unsub = FirebaseAuth.onAuthStateChanged(async (firebaseUser) => {
+          if (firebaseUser && !user) {
+            // User is signed in — find their profile from the database
+            // Wait for data to load
+            await new Promise(r => setTimeout(r, 800));
+            const allUsers = DB.get('users', []);
+            // Match by email → mobile mapping
+            const email = firebaseUser.email || '';
+            // Extract mobile from email: e.g. 917003902225@exam.chhatrobondhu.app → cc=91, mobile=7003902225
+            const localPart = email.split('@')[0] || '';
+            const matchedUser = allUsers.find(u => {
+              const cc = (u.countryCode || '+91').replace(/[^0-9]/g, '');
+              const m = String(u.mobile || '').replace(/\D/g, '');
+              return localPart === cc + m;
+            });
+            if (matchedUser) {
+              setUser(matchedUser);
+              setNav('dashboard');
+              setView('dashboard');
+            } else {
+              // Auth state exists but no matching profile, go to auth page
+              setView('auth');
+            }
+          } else if (!firebaseUser) {
+            setView('auth');
+          }
+        });
+        return unsub;
+      }, []);
+
       const login = (u) => { setUser(u); setNav('dashboard'); setView('dashboard'); };
-      const logout = () => {
+      const logout = async () => {
         try { if (document.fullscreenElement) document.exitFullscreen(); } catch { }
+        try { await FirebaseAuth.signOut(); } catch { }
         setUser(null); setView('auth'); setActiveExam(null); setFsExam(null); setPendingExam(null);
       };
 
@@ -5203,6 +5414,14 @@
       const submitExam = (att) => { setActiveResult(att); setActiveExam(null); setView('result'); };
       const viewResult = (att) => { setActiveResult(att); setView('result'); };
 
+      // Show loading spinner while checking auth state
+      if (view === 'loading') return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, background: 'var(--page)' }}>
+          <div style={{ width: 40, height: 40, border: '3px solid var(--gray-bd)', borderTopColor: 'var(--blue)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <div style={{ color: 'var(--text2)', fontSize: 14 }}>Loading...</div>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      );
       if (view === 'auth') return <AuthPage onLogin={login} />;
 
       if (view === 'exam' && activeExam) return (

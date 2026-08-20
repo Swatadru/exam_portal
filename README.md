@@ -2,10 +2,10 @@
   <img src="https://img.icons8.com/color/96/000000/exam.png" alt="Logo" width="80"/>
   <h1>🚀 Chhatro Bondhu Exam Portal</h1>
   <p>
-    <b>A Masterpiece Zero-Backend Online Examination Platform</b>
+    <b>A Full-Featured Cloud-Powered Online Examination Platform</b>
   </p>
   <p>
-    Simulating real-world competitive exams like JEE/GATE with precision, local-first analytics, and complete admin control—all entirely within the browser.
+    Simulating real-world competitive exams like JEE/GATE with precision, real-time cloud sync, and complete admin control — powered by Firebase.
   </p>
   <p>
     <a href="#-features">Features</a> •
@@ -20,8 +20,9 @@
 ## 🏆 Project Highlights
 
 - 🎯 **Real Exam Environment:** True-to-life simulation of JEE & GATE exam patterns.
-- ⚡ **Zero Backend Architecture:** Runs entirely in the browser using HTML5, LocalStorage, and IndexedDB.
-- 🖼️ **Rich Media Support:** Upload and store high-quality diagrams/images for questions, options, and solutions locally.
+- ☁️ **Firebase Cloud Backend:** Real-time data sync across all devices via Firebase Realtime Database.
+- 🔒 **Firebase Authentication:** Secure Email/Password auth with persistent sessions — no more data loss on browser clear.
+- 🖼️ **Rich Media Support:** Upload and store high-quality diagrams/images for questions, options, and solutions.
 - 📊 **Performance Analytics:** Instant, detailed result breakdowns and real-time accuracy calculation.
 - 🔐 **Role-Based Access Control:** Distinct, secure panels for Students and Administrators.
 - 📱 **Mobile-Optimized & Responsive:** Carefully crafted UI to ensure mathematical equations and layouts scale flawlessly on mobile devices.
@@ -49,7 +50,7 @@
 ## ✨ Comprehensive Feature Set
 
 ### 👨‍🎓 For Students
-- **Frictionless Onboarding:** Secure local registration and login.
+- **Frictionless Onboarding:** Secure registration and login via Firebase Authentication with persistent sessions.
 - **Dynamic Assessments:** Support for Multiple Choice (MCQ), Multiple Select (MSQ), and Numerical Input.
 - **Precision Time Management:** Real-time countdown timer with automated warnings and critical state alerts.
 - **Navigation Palette:** Quickly jump between questions, mark for review, and track answered vs. unanswered states.
@@ -79,16 +80,35 @@ The core engine is built to handle the complexities of competitive testing:
 
 ## 🛠️ Tech Stack & Architecture
 
-This project is a masterclass in **Local-First Web Development**. 
+This project is a masterclass in **Cloud-Powered Single-Page Web Development**. 
 
 | Technology | Purpose |
 | :--- | :--- |
 | **React (via CDN)** | Component-based UI and complex state management. |
 | **Babel** | In-browser JSX compilation. |
+| **Firebase Realtime Database** | Cloud-hosted NoSQL database with real-time sync across all clients. |
+| **Firebase Authentication** | Secure Email/Password auth with persistent sessions. |
 | **KaTeX** | Lightning-fast, professional mathematical equation rendering. |
-| **IndexedDB** | Storing heavy binary data (images) asynchronously. |
-| **LocalStorage** | Fast, synchronous access for user data, exams, and settings. |
 | **Vanilla CSS3** | Custom-built, responsive styling without heavy frameworks. |
+
+### 🔒 Security Architecture
+
+The database is secured with Firebase Security Rules that require authentication for all read/write operations:
+
+```json
+{
+  "rules": {
+    "users": { ".read": "auth != null", ".write": "auth != null" },
+    "exams": { ".read": "auth != null", ".write": "auth != null" },
+    "questions": { ".read": "auth != null", ".write": "auth != null" },
+    "attempts": { ".read": "auth != null", ".write": "auth != null" },
+    "malpractice_logs": { ".read": "auth != null", ".write": "auth != null" },
+    "files": { ".read": "auth != null", ".write": "auth != null" }
+  }
+}
+```
+
+Mobile numbers are mapped to synthetic emails (e.g., `917003902225@exam.chhatrobondhu.app`) so users still log in with their mobile number and password — Firebase Auth runs silently underneath.
 
 ---
 
@@ -111,7 +131,9 @@ cd exam-portal
 
 ## 📊 Why This Project Stands Out
 
-- **No Backend Dependency:** Proves that complex relational data (Users ↔ Exams ↔ Results) can be managed robustly on the client side.
+- **Cloud-First Architecture:** All data syncs in real-time via Firebase — accessible from any device, anytime.
+- **Secure by Default:** Firebase Authentication + database security rules ensure only authenticated users can access data.
+- **Session Persistence:** Users stay logged in across page refreshes and browser restarts.
 - **High-Fidelity UI/UX:** A polished, modern interface that rivals commercial examination platforms.
 - **Accessibility & Responsiveness:** Fluid typography and math rendering that adapts seamlessly from desktop to mobile.
 - **Production-Ready Frontend:** Demonstrates advanced React patterns (stale closures prevention, efficient re-rendering, and asynchronous data handling).
@@ -120,7 +142,8 @@ cd exam-portal
 
 ## 🚀 Future Enhancements
 
-- [ ] **Cloud Synchronization:** Optional Firebase/Node.js integration to sync local data across devices.
+- [x] **Cloud Synchronization:** Firebase Realtime Database for real-time sync across all devices. ✅
+- [x] **Firebase Authentication:** Secure login with persistent sessions. ✅
 - [ ] **Leaderboard System:** Global ranking among peers.
 - [ ] **Progressive Web App (PWA):** Installable offline mode for students with limited internet access.
 - [ ] **Export Capabilities:** Export results and question papers to PDF/CSV.
