@@ -2915,23 +2915,37 @@
           
           // Safely ensure admin exists after we fetch the real users array from Firebase.
           // Also ensure admin has a Firebase Auth account.
-          // Fix: also repair any incorrectly-created student profile with the admin's mobile
+          // Fix: repair incorrectly-created student profiles and deduplicate
           if (key === 'users') {
             const adminMobile = '7003902225';
-            const existingAdmin = ClientDB.users.find(u => u.role === 'admin' && u.mobile === adminMobile);
-            if (!existingAdmin) {
-              // Check if there's a student entry with the admin's mobile (caused by prior race condition bug)
-              const wrongEntry = ClientDB.users.find(u => u.mobile === adminMobile && u.role !== 'admin');
-              if (wrongEntry) {
-                // Promote the existing entry to admin instead of creating a duplicate
-                wrongEntry.role = 'admin';
-                wrongEntry.name = wrongEntry.name === 'User' ? 'Atanu Dutta' : wrongEntry.name;
-                db.ref('users').set(ClientDB.users);
-              } else {
-                ClientDB.users.push({ id: 'adm1', name: 'Atanu Dutta', mobile: adminMobile, countryCode: '+91', password: 'Atanu@123', role: 'admin', joinDate: '2025-01-01' });
-                db.ref('users').set(ClientDB.users);
+            let changed = false;
+            
+            // First, ensure all entries with the admin's mobile are set as admin and have the right name
+            ClientDB.users.forEach(u => {
+              if (u.mobile === adminMobile) {
+                if (u.role !== 'admin' || u.name !== 'Atanu Dutta') {
+                  u.role = 'admin';
+                  u.name = 'Atanu Dutta';
+                  changed = true;
+                }
               }
-              // Create Firebase Auth account for admin (async, fire-and-forget)
+            });
+
+            // Deduplicate if there are multiple entries for the admin
+            const adminEntries = ClientDB.users.filter(u => u.mobile === adminMobile);
+            if (adminEntries.length > 1) {
+              const keepId = adminEntries[0].id;
+              ClientDB.users = ClientDB.users.filter(u => u.mobile !== adminMobile || u.id === keepId);
+              changed = true;
+            } else if (adminEntries.length === 0) {
+              // Admin doesn't exist at all, create it
+              ClientDB.users.push({ id: 'adm1', name: 'Atanu Dutta', mobile: adminMobile, countryCode: '+91', password: 'Atanu@123', role: 'admin', joinDate: '2025-01-01' });
+              changed = true;
+            }
+
+            if (changed) {
+              db.ref('users').set(ClientDB.users);
+              // Ensure Firebase Auth account exists for admin (async, fire-and-forget)
               FirebaseAuth.ensureAuthAccount('+91', adminMobile, 'Atanu@123');
             }
           }
@@ -3097,7 +3111,7 @@
             const authEmail = (auth.currentUser && auth.currentUser.email) || '';
             const adminEmail = FirebaseAuth.mobileToEmail('+91', '7003902225');
             const isAdmin = authEmail === adminEmail;
-            const nu = { id: uid(), name: isAdmin ? 'Admin' : 'User', mobile: mobileVal, countryCode: ccVal, password: passVal, role: isAdmin ? 'admin' : 'student', joinDate: new Date().toISOString().slice(0, 10) };
+            const nu = { id: uid(), name: isAdmin ? 'Atanu Dutta' : 'User', mobile: mobileVal, countryCode: ccVal, password: passVal, role: isAdmin ? 'admin' : 'student', joinDate: new Date().toISOString().slice(0, 10) };
             DB.appendToArray('users', nu);
             notify('Welcome!', 's'); onLogin(nu);
           }
