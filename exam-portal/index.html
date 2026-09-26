@@ -4383,63 +4383,35 @@
       }
 
       useEffect(() => {
-        // Auto-deduplicate student accounts by mobile (due to legacy race condition bug)
-        const uniqueUsersMap = new Map();
-        const idRemap = {}; // maps duplicate userId -> canonical userId
-        let hasDuplicates = false;
-        
+        // Recover orphaned attempts (caused by previous deduplication running before attempts loaded)
         const uList = DB.get('users', []);
-        uList.forEach(u => {
-          if (u.role === 'admin') return; // Admin is handled separately
-          const mKey = (u.countryCode || '+91') + String(u.mobile || '').replace(/\D/g, '');
-          if (!mKey || mKey.length < 5) return;
+        const atts = DB.get('attempts', []);
+        
+        if (uList.length > 0 && atts.length > 0) {
+          const userIds = new Set(uList.map(u => u.id));
+          const orphanedIds = new Set();
           
-          if (!uniqueUsersMap.has(mKey)) {
-            uniqueUsersMap.set(mKey, u);
-          } else {
-            hasDuplicates = true;
-            const existing = uniqueUsersMap.get(mKey);
-            let keep = existing;
-            let drop = u;
-            // Prefer the profile that doesn't have the default "User" name
-            if (existing.name === 'User' && u.name !== 'User') {
-              keep = u;
-              drop = existing;
-            }
-            uniqueUsersMap.set(mKey, keep);
-            idRemap[drop.id] = keep.id;
-          }
-        });
-
-        if (hasDuplicates) {
-          // Keep admins plus the deduplicated students
-          const admins = uList.filter(u => u.role === 'admin');
-          const dedupedStudents = Array.from(uniqueUsersMap.values());
-          DB.set('users', [...admins, ...dedupedStudents]);
-          
-          // Migrate attempts
-          const atts = DB.get('attempts', []);
-          let attsChanged = false;
           atts.forEach(a => {
-            if (idRemap[a.userId]) {
-              a.userId = idRemap[a.userId];
-              attsChanged = true;
+            if (!userIds.has(a.userId)) {
+              orphanedIds.add(a.userId);
             }
           });
-          if (attsChanged) DB.set('attempts', atts);
           
-          // Migrate malpractice logs
-          const mLogs = DB.get('malpractice_logs', []);
-          let mLogsChanged = false;
-          mLogs.forEach(m => {
-            if (idRemap[m.userId]) {
-              m.userId = idRemap[m.userId];
-              mLogsChanged = true;
-            }
-          });
-          if (mLogsChanged) DB.set('malpractice_logs', mLogs);
+          if (orphanedIds.size > 0) {
+            const recoveredUsers = Array.from(orphanedIds).map(id => ({
+              id: id,
+              name: 'Recovered Student (Data Lost)',
+              mobile: 'Unknown',
+              countryCode: '+91',
+              password: 'none',
+              role: 'student',
+              joinDate: new Date().toISOString().slice(0, 10)
+            }));
+            
+            DB.set('users', [...uList, ...recoveredUsers]);
+          }
         }
-      }, []);
+      }, [attempts.length]);
 
       return (
         <div className="main"><div className="mi">
