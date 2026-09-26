@@ -2915,12 +2915,24 @@
           
           // Safely ensure admin exists after we fetch the real users array from Firebase.
           // Also ensure admin has a Firebase Auth account.
+          // Fix: also repair any incorrectly-created student profile with the admin's mobile
           if (key === 'users') {
-            if (!ClientDB.users.some(u => u.role === 'admin' && u.mobile === '7003902225')) {
-              ClientDB.users.push({ id: 'adm1', name: 'Atanu Dutta', mobile: '7003902225', countryCode: '+91', password: 'Atanu@123', role: 'admin', joinDate: '2025-01-01' });
-              db.ref('users').set(ClientDB.users);
+            const adminMobile = '7003902225';
+            const existingAdmin = ClientDB.users.find(u => u.role === 'admin' && u.mobile === adminMobile);
+            if (!existingAdmin) {
+              // Check if there's a student entry with the admin's mobile (caused by prior race condition bug)
+              const wrongEntry = ClientDB.users.find(u => u.mobile === adminMobile && u.role !== 'admin');
+              if (wrongEntry) {
+                // Promote the existing entry to admin instead of creating a duplicate
+                wrongEntry.role = 'admin';
+                wrongEntry.name = wrongEntry.name === 'User' ? 'Atanu Dutta' : wrongEntry.name;
+                db.ref('users').set(ClientDB.users);
+              } else {
+                ClientDB.users.push({ id: 'adm1', name: 'Atanu Dutta', mobile: adminMobile, countryCode: '+91', password: 'Atanu@123', role: 'admin', joinDate: '2025-01-01' });
+                db.ref('users').set(ClientDB.users);
+              }
               // Create Firebase Auth account for admin (async, fire-and-forget)
-              FirebaseAuth.ensureAuthAccount('+91', '7003902225', 'Atanu@123');
+              FirebaseAuth.ensureAuthAccount('+91', adminMobile, 'Atanu@123');
             }
           }
           
@@ -3070,16 +3082,22 @@
           // Authenticate via Firebase Auth
           await FirebaseAuth.signIn(ccVal, mobileVal, passVal);
           // Auth succeeded — find the user profile in our users collection
-          // Wait a moment for collection listeners to attach and load data
-          await new Promise(r => setTimeout(r, 500));
-          const allUsers = DB.get('users', []);
-          const u = allUsers.find(x => String(x.mobile || '').replace(/\D/g, '') === mobileVal && (x.countryCode || '+91') === ccVal);
+          // Poll until Firebase data loads (up to 5 seconds) instead of a fixed wait
+          let u = null;
+          for (let attempt = 0; attempt < 20; attempt++) {
+            await new Promise(r => setTimeout(r, 250));
+            const allUsers = DB.get('users', []);
+            u = allUsers.find(x => String(x.mobile || '').replace(/\D/g, '') === mobileVal && (x.countryCode || '+91') === ccVal);
+            if (u) break;
+          }
           if (u) {
             notify('Welcome back, ' + u.name + '!', 's'); onLogin(u);
           } else {
-            // Auth account exists but no profile yet — shouldn't happen normally
-            // Try creating a minimal profile
-            const nu = { id: uid(), name: 'User', mobile: mobileVal, countryCode: ccVal, password: passVal, role: 'student', joinDate: new Date().toISOString().slice(0, 10) };
+            // Auth account exists but no profile yet — detect admin by known email
+            const authEmail = (auth.currentUser && auth.currentUser.email) || '';
+            const adminEmail = FirebaseAuth.mobileToEmail('+91', '7003902225');
+            const isAdmin = authEmail === adminEmail;
+            const nu = { id: uid(), name: isAdmin ? 'Admin' : 'User', mobile: mobileVal, countryCode: ccVal, password: passVal, role: isAdmin ? 'admin' : 'student', joinDate: new Date().toISOString().slice(0, 10) };
             DB.appendToArray('users', nu);
             notify('Welcome!', 's'); onLogin(nu);
           }
@@ -5362,18 +5380,20 @@
         const unsub = FirebaseAuth.onAuthStateChanged(async (firebaseUser) => {
           if (firebaseUser && !user) {
             // User is signed in — find their profile from the database
-            // Wait for data to load
-            await new Promise(r => setTimeout(r, 800));
-            const allUsers = DB.get('users', []);
-            // Match by email → mobile mapping
+            // Poll until Firebase data loads (up to 5 seconds) instead of a fixed wait
             const email = firebaseUser.email || '';
-            // Extract mobile from email: e.g. 917003902225@exam.chhatrobondhu.app → cc=91, mobile=7003902225
             const localPart = email.split('@')[0] || '';
-            const matchedUser = allUsers.find(u => {
-              const cc = (u.countryCode || '+91').replace(/[^0-9]/g, '');
-              const m = String(u.mobile || '').replace(/\D/g, '');
-              return localPart === cc + m;
-            });
+            let matchedUser = null;
+            for (let attempt = 0; attempt < 20; attempt++) {
+              await new Promise(r => setTimeout(r, 250));
+              const allUsers = DB.get('users', []);
+              matchedUser = allUsers.find(u => {
+                const cc = (u.countryCode || '+91').replace(/[^0-9]/g, '');
+                const m = String(u.mobile || '').replace(/\D/g, '');
+                return localPart === cc + m;
+              });
+              if (matchedUser) break;
+            }
             if (matchedUser) {
               setUser(matchedUser);
               setNav('dashboard');
