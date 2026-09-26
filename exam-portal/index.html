@@ -4382,6 +4382,65 @@
         DB.set('malpractice_logs', malpLogs);
       }
 
+      useEffect(() => {
+        // Auto-deduplicate student accounts by mobile (due to legacy race condition bug)
+        const uniqueUsersMap = new Map();
+        const idRemap = {}; // maps duplicate userId -> canonical userId
+        let hasDuplicates = false;
+        
+        const uList = DB.get('users', []);
+        uList.forEach(u => {
+          if (u.role === 'admin') return; // Admin is handled separately
+          const mKey = (u.countryCode || '+91') + String(u.mobile || '').replace(/\D/g, '');
+          if (!mKey || mKey.length < 5) return;
+          
+          if (!uniqueUsersMap.has(mKey)) {
+            uniqueUsersMap.set(mKey, u);
+          } else {
+            hasDuplicates = true;
+            const existing = uniqueUsersMap.get(mKey);
+            let keep = existing;
+            let drop = u;
+            // Prefer the profile that doesn't have the default "User" name
+            if (existing.name === 'User' && u.name !== 'User') {
+              keep = u;
+              drop = existing;
+            }
+            uniqueUsersMap.set(mKey, keep);
+            idRemap[drop.id] = keep.id;
+          }
+        });
+
+        if (hasDuplicates) {
+          // Keep admins plus the deduplicated students
+          const admins = uList.filter(u => u.role === 'admin');
+          const dedupedStudents = Array.from(uniqueUsersMap.values());
+          DB.set('users', [...admins, ...dedupedStudents]);
+          
+          // Migrate attempts
+          const atts = DB.get('attempts', []);
+          let attsChanged = false;
+          atts.forEach(a => {
+            if (idRemap[a.userId]) {
+              a.userId = idRemap[a.userId];
+              attsChanged = true;
+            }
+          });
+          if (attsChanged) DB.set('attempts', atts);
+          
+          // Migrate malpractice logs
+          const mLogs = DB.get('malpractice_logs', []);
+          let mLogsChanged = false;
+          mLogs.forEach(m => {
+            if (idRemap[m.userId]) {
+              m.userId = idRemap[m.userId];
+              mLogsChanged = true;
+            }
+          });
+          if (mLogsChanged) DB.set('malpractice_logs', mLogs);
+        }
+      }, []);
+
       return (
         <div className="main"><div className="mi">
           <div className="phd"><div><div className="ptitle">Admin Dashboard</div><div className="psub">Platform overview</div></div></div>
